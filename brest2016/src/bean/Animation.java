@@ -3,6 +3,8 @@
  */
 package bean;
 
+import org.hibernate.validator.constraints.NotBlank;
+
 /**
  * @author oarcher
  *
@@ -12,6 +14,7 @@ public class Animation {
 	/**
 	 * 
 	 */
+	@NotBlank(message = "ne peux pas être vide")
 	private String nom="";
 	private String texte="";
 	
@@ -38,7 +41,4 @@ public class Animation {
 	public void setTexte(String texte) {
 		this.texte = texte;
 	}
-	
-	
-	
 }

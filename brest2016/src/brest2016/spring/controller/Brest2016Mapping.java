@@ -3,7 +3,13 @@
  */
 package brest2016.spring.controller;
 
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.validation.Valid;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 /**
  * @author oarcher
@@ -11,44 +17,59 @@ package brest2016.spring.controller;
  */
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.Errors;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.servlet.ModelAndView;
 import bean.Animation;
 
 @Controller
 public class Brest2016Mapping {
 
-	//@Autowired
-	private Animation animation;
-	
+	private List<Animation> listeanimation = new ArrayList<Animation>();
+
+	@RequestMapping(value = "/acceuil.htm")
+	public String pageAcceuil() {
+		System.out.println("Mapping acceuil.htm");
+		return "brest2016";
+	}
+
 	@RequestMapping(value = "/brest2016.htm")
 	public ModelAndView pageAdmin() {
+		System.out.println("Mapping brest2016.htm");
 		ModelAndView view = new ModelAndView();
-		view.setViewName("brest2016"); // /WEB-INF/views/admin.jsp selon le resolver
-									// defini dans WebAppConfig
-
-		String str = "mapping Spring";
-		view.addObject("message", str); // adding of str object as 'message'
-										// parameter
-
+		view.setViewName("brest2016"); // /WEB-INF/views/admin.jsp selon le
+										// resolver
+										// defini dans WebAppConfig
 		return view;
 	}
-	
-	@RequestMapping(value = "/listeanimations.json",method=RequestMethod.GET)
+
+	@RequestMapping(value = "/listeanimations.json", method = RequestMethod.GET)
 	@ResponseBody
-	public  Animation listeAnimation() {
-		System.out.println("listeanimation");
-		Animation animation = new Animation();
-		animation.setNom("testanimation");
-		animation.setTexte("texte testanimation");
-//		List <Animation> listeanim=new ArrayList<Animation>();
-//		listeanim.add(new Animation("anim1"));
-//		listeanim.add(new Animation("anim2"));
-//		
-        return animation;
+	public List<Animation> listeAnimation() {
+		System.out.println("Mapping listeanimations.json");
+		return listeanimation;
 
 	}
+
+	// Les erreurs de validations sont gérées par la classe ControllerExceptionHandler 
+	// et sans utiliser BindingResult
+	@RequestMapping(value = "/ajouteranimation.json", method = RequestMethod.POST)
+	@ResponseBody
+	public ResponseEntity<List<Animation>> ajouterAnimation(@RequestBody @Valid Animation animation) throws MethodArgumentNotValidException {
+		System.out.println("Mapping ajouteranimations.json");
+		listeanimation.add(animation);
+		return new ResponseEntity<>(listeanimation, HttpStatus.OK);
+	}
+	
+	
 
 }
