@@ -29,9 +29,15 @@ public class Initializer implements WebApplicationInitializer {
 		ctx.register(WebAppConfig.class);  // contient les resolvers
 
 		ctx.setServletContext(servletContext);	
-		Dynamic servlet = servletContext.addServlet("dispatcher", new DispatcherServlet(ctx));
-		servlet.addMapping("*.htm");
+		Dynamic servlet = servletContext.addServlet("json_dispatcher", new DispatcherServlet(ctx));
+		servlet.addMapping("*.json");
 		servlet.setLoadOnStartup(1);
+		
+		Dynamic servlet1 = servletContext.addServlet("htm_dispatcher", new DispatcherServlet(ctx));
+		servlet1.addMapping("*.htm");
+		servlet1.setLoadOnStartup(1);
+		
+		
 
 	}
 

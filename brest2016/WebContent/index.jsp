@@ -4,6 +4,6 @@
 
 <%
 // response.sendRedirect("test1.htm");
-response.sendRedirect("admin.htm");
+response.sendRedirect("brest2016.htm");
 %>
 
