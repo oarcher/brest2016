@@ -6,8 +6,12 @@ package brest2016.spring.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Resource;
+import javax.sql.DataSource;
 import javax.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -34,7 +38,11 @@ import bean.Animation;
 @Controller
 public class Brest2016Mapping {
 
-	private List<Animation> listeanimation = new ArrayList<Animation>();
+	
+	@Resource 
+	Dao dao;
+    
+	//private List<Animation> listeanimation = new ArrayList<Animation>();
 
 	@RequestMapping(value = "/acceuil.htm")
 	public String pageAcceuil() {
@@ -52,22 +60,24 @@ public class Brest2016Mapping {
 		return view;
 	}
 
-	@RequestMapping(value = "/listeanimations.json", method = RequestMethod.GET)
+	@RequestMapping(value = "/listeranimations.json", method = RequestMethod.GET)
 	@ResponseBody
-	public List<Animation> listeAnimation() {
+	public ResponseEntity<?> listerAnimations() {
 		System.out.println("Mapping listeanimations.json");
-		return listeanimation;
+		return new ResponseEntity<>(dao.listerAnimations(),HttpStatus.OK);
 
 	}
 
 	// Les erreurs de validations sont gérées par la classe ControllerExceptionHandler 
 	// et sans utiliser BindingResult
+	// TODO Ailleurs : utiliser @InitBinder pour ecrire un validateur complexe
 	@RequestMapping(value = "/ajouteranimation.json", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<List<Animation>> ajouterAnimation(@RequestBody @Valid Animation animation) throws MethodArgumentNotValidException {
+	public ResponseEntity ajouterAnimation(@RequestBody @Valid Animation animation) throws MethodArgumentNotValidException {
 		System.out.println("Mapping ajouteranimations.json");
-		listeanimation.add(animation);
-		return new ResponseEntity<>(listeanimation, HttpStatus.OK);
+		dao.enregistrerAnimation(animation);
+		return new ResponseEntity(HttpStatus.OK);
+		//return listerAnimations();
 	}
 	
 	

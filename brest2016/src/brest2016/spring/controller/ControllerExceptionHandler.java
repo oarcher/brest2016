@@ -17,6 +17,7 @@ import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -28,6 +29,10 @@ import brest2016.spring.controller.ErrorMessage;
  * 
  * adapté de 
  *  https://gist.github.com/matsev/4519323#file-errormessage-java
+ *  
+ *  Permet d'avoir des messages d'erreurs personnalisés, Tout en utilisant
+ *  un objet de retour ResponseEntity standard et facilement gérable du
+ *  coté d'angular 
  *
  */
 
@@ -35,6 +40,9 @@ import brest2016.spring.controller.ErrorMessage;
 @EnableWebMvc
 @ControllerAdvice
 public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
+	public void ControllerExceptionHandler(){
+		System.out.println("ControllerExceptionHandler: Initialisation des gestionnaires d'erreur");
+	}
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {

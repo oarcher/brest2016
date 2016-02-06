@@ -16,20 +16,22 @@
 
 <body>
 
-		<form ng-controller="Brest2016Control" ng-submit="ajouterAnimation()">
-			<input type="text" ng-model="nom" />
-			<input type="text" ng-model="texte" />
-			<button>Add</button>
+	<form ng-controller="Brest2016Control" ng-submit="ajouterAnimation()">
+		<input type="text" ng-model="nom" /> <input type="text"
+			ng-model="texte" />
+		<button>Add</button>
 
-	<!-- 	</form> -->
+		<!-- 	</form> -->
 
-	test
-	<form ng-controller="Brest2016Control">
-		<div
-			ng-repeat="animation in animations = ( animations || recupererListeAnimations())">
-			<li>{{animation.nom}} {{animation.texte}}
-		</div>
-	</form>
+		test
+		<form ng-controller="Brest2016Control">
+			<div ng-init="animations = listerAnimations()">
+				<div
+					ng-repeat="animation in animations">
+					<li>{{animation.nom}} {{animation.texte}}
+				</div>
+			</div>
+		</form>
 </body>
 </html>
 
