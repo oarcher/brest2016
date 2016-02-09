@@ -12,4 +12,4 @@
 //'use strict';
 
 
-angular.module('brest2016App', []);
+angular.module('brest2016App', ['ngResource']);

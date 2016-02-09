@@ -49,15 +49,16 @@ public class Dao {
 //
 //	}
 
-	public void enregistrerAnimation(Animation c) {
+	public void createAnimation(Animation animation) {
 		EntityTransaction tx = entityManager.getTransaction();
 		tx.begin();
-		entityManager.persist(c);
+		entityManager.persist(animation);
 		tx.commit();
 	}
 
-	public List<Animation> listerAnimations() {
+	public List<Animation> readAnimation() {
 		List<Animation> lst = entityManager.createQuery("select g from Animation g").getResultList();
+		System.out.println("DAO readAnimation: len" + lst.size());
 		return lst;
 	}
 

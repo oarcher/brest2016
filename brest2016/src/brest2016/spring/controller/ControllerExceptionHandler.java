@@ -46,7 +46,6 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
-    	System.out.println("handleMethodArgumentNotValid");
     	List<FieldError> fieldErrors = ex.getBindingResult().getFieldErrors();
         List<ObjectError> globalErrors = ex.getBindingResult().getGlobalErrors();
         List<String> errors = new ArrayList<>(fieldErrors.size() + globalErrors.size());
@@ -59,6 +58,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
             error = objectError.getObjectName() + ": " + objectError.getDefaultMessage();
             errors.add(error);
         }
+        System.out.println("handleMethodArgumentNotValid" + errors.toString());
         ErrorMessage errorMessage = new ErrorMessage(errors);
         return new ResponseEntity(errorMessage, headers, status);
     }

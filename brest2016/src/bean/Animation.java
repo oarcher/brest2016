@@ -37,14 +37,14 @@ public class Animation implements Serializable{
 	@NotBlank(message = "ne peux pas être vide")
 	private String nom="";
 	@Size(min=3, message="au moins 3 caractères")
-	private String texte="";
+	private String descr="";
 	
 	public Animation() {
 	}
 
-	public Animation(String nom, String texte) {
+	public Animation(String nom, String descr) {
 		this.nom=nom;
-		this.texte=texte;
+		this.descr=descr;
 	}
 
 	public String getNom() {
@@ -55,11 +55,11 @@ public class Animation implements Serializable{
 		this.nom = nom;
 	}
 
-	public String getTexte() {
-		return texte;
+	public String getDescr() {
+		return descr;
 	}
 
-	public void setTexte(String texte) {
-		this.texte = texte;
+	public void setDescr(String descr) {
+		this.descr = descr;
 	}
 }
