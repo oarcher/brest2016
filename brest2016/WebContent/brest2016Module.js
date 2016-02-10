@@ -12,4 +12,5 @@
 //'use strict';
 
 
-angular.module('brest2016App', ['ngResource']);
+angular.module('brest2016App', ['ngResource', 'ui.bootstrap']);
+//angular.module('brest2016App', ['ngResource']);

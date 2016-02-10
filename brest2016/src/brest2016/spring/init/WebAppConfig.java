@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.view.JstlView;
 import org.springframework.web.servlet.view.UrlBasedViewResolver;
@@ -33,29 +34,29 @@ import brest2016.spring.controller.Dao;
 public class WebAppConfig {
 
 	// Le serveur est RESTFULL, les vue ne sont pas gérées pour l'instant
-	// @Bean
-	// public UrlBasedViewResolver initUrlBasedViewResolver() {
-	//
-	// System.out.println("Mise en place du reslover sur les vues");
-	// UrlBasedViewResolver resolver = new UrlBasedViewResolver();
-	// resolver.setPrefix("/WEB-INF/views/");
-	// resolver.setSuffix(".jsp");
-	// resolver.setViewClass(JstlView.class);
-	// return resolver;
-	// }
+	@Bean
+	public UrlBasedViewResolver initUrlBasedViewResolver() {
+
+		System.out.println("Mise en place du reslover sur les vues");
+		UrlBasedViewResolver resolver = new UrlBasedViewResolver();
+		resolver.setPrefix("/WEB-INF/views/");
+		resolver.setSuffix(".jsp");
+		resolver.setViewClass(JstlView.class);
+		return resolver;
+	}
 
 	// remplace persitence.xml
 	// TODO application.property brest2016/src/main/resources
-	@Bean(name = "dataSource")
-	public DataSource getDataSource() {
-		BasicDataSource dataSource = new BasicDataSource();
-		dataSource.setDriverClassName("com.mysql.jdbc.Driver");
-		dataSource.setUrl("jdbc:mysql://localhost:3306/test");
-		dataSource.setUsername("test");
-		dataSource.setPassword("test");
-
-		return dataSource;
-	}
+	// @Bean(name = "dataSource")
+	// public DataSource getDataSource() {
+	// BasicDataSource dataSource = new BasicDataSource();
+	// dataSource.setDriverClassName("com.mysql.jdbc.Driver");
+	// dataSource.setUrl("jdbc:mysql://localhost:3306/test");
+	// dataSource.setUsername("test");
+	// dataSource.setPassword("test");
+	//
+	// return dataSource;
+	// }
 
 	/*
 	 * Configuration hibernate
@@ -87,5 +88,18 @@ public class WebAppConfig {
 		return new Dao(entityManager); // TODO Dao devrait etre une
 										// implementation
 	}
+	
+	/**
+	 * RequestContextListener:
+	 * 		Permet de recuperer le 'root path' ('/brest2016') dans le controleur
+	 * @return
+	 */
+	@Autowired
+	@Bean
+	public RequestContextListener requestContextListener(){
+		System.out.println("requestContextListener");
+	    return new RequestContextListener();
+	    
+	} 
 
 }

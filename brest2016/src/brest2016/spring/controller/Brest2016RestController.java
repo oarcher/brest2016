@@ -7,11 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -23,9 +25,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.DataBinder;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -33,6 +37,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.ModelAndView;
 import bean.Animation;
 
@@ -68,7 +75,7 @@ import bean.Animation;
  *  
  */
 
-@RestController
+@RestController("/rest")
 public class Brest2016RestController {
 
 	
@@ -107,16 +114,31 @@ public class Brest2016RestController {
 	 * Create (POST)
 	 *
 	 * @param animation the animation
-	 * @return ResponseEntity avec HttpStatus.OK en cas de succes
+	 *   	L'animation fournie est sans id. celui-ci est positionné par le dao
+	 * @return ResponseEntity avec HttpStatus.FOUND (redirect) en cas de succes
+	 * 		le header 'Location' est positionné sur l'url de l'animation,
+	 * 		pour que le client ait connaissance de l'id créé (par un GET)
+	 * 		voir https://fr.wikipedia.org/wiki/Post-Redirect-Get
 	 * @throws MethodArgumentNotValidException si animation n'est pas valide 
 	 * 	
 	 */
 	// TODO Ailleurs : utiliser @InitBinder pour ecrire un validateur complexe
 	@RequestMapping(value = "/rest/animation.json", method = RequestMethod.POST)
 	public ResponseEntity createAnimation(@RequestBody @Valid Animation animation) throws MethodArgumentNotValidException {
+		// test par curl -v -H "Content-Type: application/json" -X POST -d '{"nom":"testCurl","descr":"test descr"}' http://localhost:5913/brest2016/rest/animation.json
 		System.out.println("Mapping POST (Create ) animation.json");
-		dao.createAnimation(animation);
-		return new ResponseEntity(HttpStatus.OK);
+		
+		animation=dao.createAnimation(animation);  // animation n'avait pas d'id, il en a maintenant un généré par le dao
+
+		// mise en place de l'url de redirection
+		// recuperation du context root (/brest2016) pour contruire l'url de redirection
+		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+		String createdUrl = request.getContextPath() +  "/rest/" + animation.getId() + "/animation.json";
+		System.out.println("redirection vers : " + createdUrl);
+		HttpHeaders headers = new HttpHeaders();
+		headers.add("Location", createdUrl);
+
+		return new ResponseEntity<>(null, headers ,HttpStatus.FOUND);
 	}
 	
 	/**
@@ -129,6 +151,20 @@ public class Brest2016RestController {
 		System.out.println("Mapping GET (Read ) /animation.json");
 		return new ResponseEntity<>(dao.readAnimation(),HttpStatus.OK);
 
+	}
+	
+	/**
+	 * Read (GET)
+	 *
+	 * @return JSON ResponseEntity contenant UNE animation
+	 */
+	@RequestMapping(value = "/rest/{strid}/animation.json", method = RequestMethod.GET)
+	public ResponseEntity<?> animation(@PathVariable String strid) throws NumberFormatException {
+		System.out.println("Mapping GET (One Read " + strid + ") /animation.json");
+		int id=Integer.parseInt(strid);  // throws NumberFormatException
+		Animation animation = dao.readAnimation(id);  // out of bounds non géré ..
+		return new ResponseEntity<>(animation ,HttpStatus.OK);
+		
 	}
 
 	

@@ -34,7 +34,7 @@ public class Initializer implements WebApplicationInitializer {
 		// refusent de produire du
 		// json avec un mapping .htm, en provoquant une erreur 406 bad content
 		Dynamic servlet = servletContext.addServlet("json_dispatcher", new DispatcherServlet(ctx));
-		servlet.addMapping("*.json");
+		servlet.addMapping("*.json");  // FIXME ca serait mieux avec "/rest/*" voir Context root dans web project settings ?
 		servlet.setLoadOnStartup(1);
 
 		// RestFull , pas de dispatcher htm pour l'instant

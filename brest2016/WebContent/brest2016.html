@@ -4,8 +4,9 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <title>Reservation de créneaux pour Brest 2016</title>
-<link rel="stylesheet" type="text/css" href="style.css">
+<link rel="stylesheet" type="text/css" href="bootstrap.css">
 <script type="text/javascript" src="angular.js"></script>
+<script type="text/javascript" src="ui-bootstrap-tpls-1.1.2.js"></script>
 <script type="text/javascript" src="angular-resource.js"></script>
 <script type="text/javascript" src="brest2016Module.js"></script>
 <script type="text/javascript" src="brest2016Factory.js"></script>
@@ -15,34 +16,20 @@
 
 
 <body>
-
-	Write some text in textbox:
-	<input type="text" ng-model="sometext" />
-
-	<h1>Hello {{ sometext }}</h1>
-
-	<div ng-controller="Brest2016Controller as vm">test {{vm.salut}}</div>
-
-	<!-- 	as vm -->
-	<!-- 	<form ng-controller="Brest2016Controller as vm" -->
-	<!-- 		ng-submit=vm.diresalut()> -->
-	<!-- 		<button>Add</button> -->
-	<!-- 		{{vm.salut}} -->
-	<!-- 	</form> -->
-
-
-
-	<!-- Faire tres attention aux form imbriquées ( faire plusieurs controller ? Voir 'as' ?) -->
-	<form ng-controller="Brest2016Controller as vm"
-		ng-submit="vm.createAnimation()">
-		<input type="text" ng-model="vm.animation.nom" /> <input type="text"
-			ng-model="vm.animation.descr" />
-		<button>Add</button>
-		<div ng-repeat="animation in vm.animations">
-			<li>{{animation.nom}} : {{animation.descr}}
-		</div>
-	</form>
-
+	<div>
+		<!-- Faire tres attention aux form imbriquées ( faire plusieurs controller ? Voir 'as' ?) -->
+		<form class="form-horizontal" role="form"
+			ng-controller="Brest2016Controller as vm"
+			ng-submit="vm.createAnimation()">
+			<label class="control-label">Animation</label> <input type="text"
+				ng-model="vm.animation.nom" /> <input type="text"
+				ng-model="vm.animation.descr" />
+			<button class="btn btn-primary">Add</button>
+			<div ng-show="vm.animations.length" ng-repeat="animation in vm.animations">
+				<li>id: {{animation.id}} nom: {{animation.nom}} descr: {{animation.descr}}
+			</div>
+		</form>
+	</div>
 
 </body>
 </html>

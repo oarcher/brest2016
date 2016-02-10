@@ -42,9 +42,31 @@ public class Animation implements Serializable{
 	public Animation() {
 	}
 
-	public Animation(String nom, String descr) {
+	public Animation(int id, String nom, String descr) {
+		this.id=id;
 		this.nom=nom;
 		this.descr=descr;
+	}
+	
+	// copy constructor
+	public Animation(Animation animation){
+		this.id=animation.id;
+		this.nom=animation.nom;
+		this.descr=animation.descr;
+	}
+	
+	
+
+	public String toString(){
+		return "id : " + this.id + " nom : " + this.nom + " descr : " + this.descr;
+	}
+	
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}
 
 	public String getNom() {
@@ -62,4 +84,6 @@ public class Animation implements Serializable{
 	public void setDescr(String descr) {
 		this.descr = descr;
 	}
+	
+	
 }
