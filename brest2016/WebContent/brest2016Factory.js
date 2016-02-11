@@ -23,7 +23,10 @@ angular.module('brest2016App').factory('Animation', function($resource) {
 	// pour les redifinitions de methode
 	return $resource('/brest2016/rest/animation.json', {}, {
         query: { method: "GET", isArray: true },
-        create: { method: "POST" }
+        create: { method: "POST" },
+        read: { method: "GET", url: "/brest2016/rest/:id/animation.json" },
+        update: { method: "PUT", url: "/brest2016/rest/:id/animation.json" },
+        destroy: { method: "DELETE", url: "/brest2016/rest/:id/animation.json" },
 	}); // Note the full endpoint address
 });
 

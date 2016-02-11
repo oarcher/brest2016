@@ -81,7 +81,32 @@ public class Dao {
 		System.out.println("DAO readAnimation (One): " + animation.toString());
 		return animation;
 	}
-
+	
+	/**
+	 * destroyAnimation(int id) Suppression dan la base d'une animation
+	 * @param id : id de l'animation
+	 * @return : nombre d'éléments supprimés (1=OK, 0=non trouvé)
+	 */
+	public int destroyAnimation(int id) {
+		Query query = entityManager.createQuery("select g from Animation g where g.id=:id");
+		System.out.println("DAO delete: " + id);
+		query.setParameter("id",  id);
+		List<Animation> lstanimation = query.getResultList();
+		
+		EntityTransaction tx = entityManager.getTransaction();
+		tx.begin();
+		for (Animation animation: lstanimation) {  
+			entityManager.remove(animation);
+		}
+		tx.commit();
+		System.out.println("eléments retirés: " + lstanimation.size());
+		
+		return lstanimation.size();
+			
+	}
+	
+	
+	
 	public void init() {
 		System.out.println("init dao");
 	}

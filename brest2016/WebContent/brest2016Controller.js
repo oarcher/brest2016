@@ -9,6 +9,12 @@ angular.module('brest2016App').controller('Brest2016Controller',
 
 // brest2016Controller.$inject = [$http, 'AnimationService'];
 
+/**
+ * @param $resource
+ * @param $http
+ * @param growl
+ * @param Animation
+ */
 function brest2016Controller($resource, $http, growl, Animation) {
 	// on préfère l'utilisation de 'this' a $scope
 
@@ -53,9 +59,9 @@ function brest2016Controller($resource, $http, growl, Animation) {
 	 * implementation des fonctions
 	 */
 
-	function createAnimation() {
-		console.log('createAnimation' + JSON.stringify(vm.animation));
-		Animation.create(vm.animation, function(animation) {
+	function createAnimation(animation) {
+		console.log('createAnimation' + JSON.stringify(animation));
+		Animation.create(animation, function(animation) {
 			// l'animation a créer n'a pas d'id. C'est le role du serveur REST
 			// de le fournir.
 			// Le serveur Rest a fait du Post-Redirect-Get (
@@ -91,6 +97,18 @@ function brest2016Controller($resource, $http, growl, Animation) {
 		return animations;
 	}
 
+	function destroyAnimation(animation){
+		Animation.destroy(animation);
+	}
+	
+	
+	/**
+	 *  deprecated methods (utiliation de $http au lieu de $resource 
+	 * 
+	 */
+	
+	
+	
 	function ajouterAnimation() {
 		console.log('ajout avant $http animations=' + vm.animations.length);
 		// var animation = {

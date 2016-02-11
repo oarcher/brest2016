@@ -25,7 +25,7 @@
 		<!-- Faire tres attention aux form imbriquées ( faire plusieurs controller ? Voir 'as' ?) -->
 		<form class="form-horizontal" role="form"
 			ng-controller="Brest2016Controller as vm"
-			ng-submit="vm.createAnimation()">
+			ng-submit="vm.createAnimation(vm.animation)">
 			<label class="control-label">Animation</label> <input type="text"
 				ng-model="vm.animation.nom" /> <input type="text"
 				ng-model="vm.animation.descr" />

@@ -147,8 +147,8 @@ public class Brest2016RestController {
 	 * @return JSON ResponseEntity contenant les animations
 	 */
 	@RequestMapping(value = "/rest/animation.json", method = RequestMethod.GET)
-	public ResponseEntity<?> animation() {
-		System.out.println("Mapping GET (Read ) /animation.json");
+	public ResponseEntity<?> queryAnimation() {
+		System.out.println("Mapping Query all (Read ) /animation.json");
 		return new ResponseEntity<>(dao.readAnimation(),HttpStatus.OK);
 
 	}
@@ -159,7 +159,7 @@ public class Brest2016RestController {
 	 * @return JSON ResponseEntity contenant UNE animation
 	 */
 	@RequestMapping(value = "/rest/{strid}/animation.json", method = RequestMethod.GET)
-	public ResponseEntity<?> animation(@PathVariable String strid) throws NumberFormatException {
+	public ResponseEntity<?> getAnimation(@PathVariable String strid) throws NumberFormatException {
 		System.out.println("Mapping GET (One Read " + strid + ") /animation.json");
 		int id=Integer.parseInt(strid);  // throws NumberFormatException
 		Animation animation = dao.readAnimation(id);  // out of bounds non géré ..
@@ -167,7 +167,28 @@ public class Brest2016RestController {
 		
 	}
 
-	
+
+	/**
+	 * Destroy (DELETE)
+	 *
+	 * @return HttpStatus.OK si OK. sinon
+
+	 */
+	@RequestMapping(value = "/rest/{strid}/animation.json", method = RequestMethod.DELETE)
+	public ResponseEntity<?> DestroyAnimation(@PathVariable String strid) throws MethodArgumentNotValidException {
+		System.out.println("Mapping Destroye (One Read " + strid + ") /animation.json");
+		int id=Integer.parseInt(strid);  // throws NumberFormatException
+		int result=dao.destroyAnimation(id);  // out of bounds non géré ..
+		
+		
+		if (result == 0){
+			// pas d'animation trouvée ...
+			//throw new MethodArgumentNotValidException(null, null);
+			return new ResponseEntity<>("id animation non trouvé" , null ,HttpStatus.NOT_FOUND);
+		} else {
+			return new ResponseEntity<>(null,HttpStatus.OK);
+		}
+	}
 	
 
 }
