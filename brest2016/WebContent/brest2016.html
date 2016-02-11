@@ -4,10 +4,14 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <title>Reservation de créneaux pour Brest 2016</title>
-<link rel="stylesheet" type="text/css" href="bootstrap.css">
+<link rel="stylesheet" type="text/css" href="styles/bootstrap.css">
+<link rel="stylesheet" type="text/css" href="styles/animate.css">
+<link rel="stylesheet" type="text/css" href="styles/brest2016.css">
 <script type="text/javascript" src="angular.js"></script>
 <script type="text/javascript" src="ui-bootstrap-tpls-1.1.2.js"></script>
 <script type="text/javascript" src="angular-resource.js"></script>
+<script type="text/javascript" src="angular-growl.js"></script>
+<script type="text/javascript" src="angular-sanitize.js"></script>
 <script type="text/javascript" src="brest2016Module.js"></script>
 <script type="text/javascript" src="brest2016Factory.js"></script>
 <script type="text/javascript" src="brest2016Controller.js"></script>
@@ -16,6 +20,7 @@
 
 
 <body>
+	<div data-growl=""></div>
 	<div>
 		<!-- Faire tres attention aux form imbriquées ( faire plusieurs controller ? Voir 'as' ?) -->
 		<form class="form-horizontal" role="form"

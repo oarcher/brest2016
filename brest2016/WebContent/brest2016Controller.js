@@ -5,11 +5,11 @@
 'use strict';
 
 angular.module('brest2016App').controller('Brest2016Controller',
-		[ '$resource', '$http', 'Animation', brest2016Controller ]);
+		brest2016Controller);
 
 // brest2016Controller.$inject = [$http, 'AnimationService'];
 
-function brest2016Controller($resource, $http, Animation) {
+function brest2016Controller($resource, $http, growl, Animation) {
 	// on préfère l'utilisation de 'this' a $scope
 
 	/**
@@ -29,12 +29,12 @@ function brest2016Controller($resource, $http, Animation) {
 	 * Le faire ici permet d'avoir une vue syntetique du co,ntroller, un peu a
 	 * la facon d'une interface.
 	 */
-	
+
 	vm.animations = []; // contiendra les animations
 	vm.createAnimation = createAnimation; // création d'animation (rest)
 	// vm.createAnimation = ajouterAnimation ;
 	vm.readAnimation = readAnimation; // recuperation des animations (rest)
-	//vm.readAnimation=listerAnimations;
+	// vm.readAnimation=listerAnimations;
 
 	/** l'objet animation (JSON) */
 	vm.animation = {
@@ -48,7 +48,7 @@ function brest2016Controller($resource, $http, Animation) {
 	 */
 	vm.animations = vm.readAnimation();
 	console.log('juste apres read : ' + JSON.stringify(vm.animations));
-	
+
 	/**
 	 * implementation des fonctions
 	 */
@@ -56,16 +56,25 @@ function brest2016Controller($resource, $http, Animation) {
 	function createAnimation() {
 		console.log('createAnimation' + JSON.stringify(vm.animation));
 		Animation.create(vm.animation, function(animation) {
-			// l'animation a créer n'a pas d'id. C'est le role du serveur REST de le fournir.
-			// Le serveur Rest a fait du Post-Redirect-Get ( https://fr.wikipedia.org/wiki/Post-Redirect-Get )
+			// l'animation a créer n'a pas d'id. C'est le role du serveur REST
+			// de le fournir.
+			// Le serveur Rest a fait du Post-Redirect-Get (
+			// https://fr.wikipedia.org/wiki/Post-Redirect-Get )
 			// pour rediriger vers l'url de l'animation créee
-			// Un code 302 (FOUND/Redirect) a été retourné avec le header 'Location' positionné sur l'url de l'animation crée
-			// Cette redirection a été automatiquement suivie, et animation contient maitenant un id
-			// animation est du type {id: 76, nom: "NOM", descr: "DESCR", $promise: Promise, $resolved: true}
-			console.log('createAnimation OK :' + JSON.stringify(animation));
-			vm.animations.push(animation);   
+			// Un code 302 (FOUND/Redirect) a été retourné avec le header
+			// 'Location' positionné sur l'url de l'animation crée
+			// Cette redirection a été automatiquement suivie, et animation
+			// contient maitenant un id
+			// animation est du type {id: 76, nom: "NOM", descr: "DESCR",
+			// $promise: Promise, $resolved: true}
+			growl.addSuccessMessage('createAnimation OK :' + JSON.stringify(animation));
+
+			//console.log('createAnimation OK :' + JSON.stringify(animation));
+			vm.animations.push(animation);
 			vm.animation = {};
 		}, function(response) {
+			growl.addWarnMessage('createAnimation NOK' + response.data.errors);
+			//growl.addErrorMessage('createAnimation NOK' + response.data.errors);
 			console.log('createAnimation NOK');
 			console.log(response);
 		});
@@ -75,16 +84,13 @@ function brest2016Controller($resource, $http, Animation) {
 	 * @return un tableau de 'promises' qui seront résolues dynamiquement
 	 */
 	function readAnimation() {
-//		var animations = Animation.query().$promise.then(function(response){
-//			console.log('callback read : ' + JSON.stringify(response));
-//		});
+		// var animations = Animation.query().$promise.then(function(response){
+		// console.log('callback read : ' + JSON.stringify(response));
+		// });
 		var animations = Animation.query();
 		return animations;
 	}
-	
 
-	
-	
 	function ajouterAnimation() {
 		console.log('ajout avant $http animations=' + vm.animations.length);
 		// var animation = {
@@ -105,7 +111,8 @@ function brest2016Controller($resource, $http, Animation) {
 									+ vm.animations.length);
 							vm.animations.push(vm.animation);
 							// vm.listerAnimations();
-							console.log('ajout ok animations=' + vm.animations.length);
+							console.log('ajout ok animations='
+									+ vm.animations.length);
 						},
 						function(response) {
 							var data = response.data, status = response.status, header = response.header, config = response.config;

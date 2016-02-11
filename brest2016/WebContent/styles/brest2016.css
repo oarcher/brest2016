@@ -1,0 +1,15 @@
+@CHARSET "UTF-8";
+
+.growl {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    float: right;
+    width: 250px;
+    z-index: 9999;
+}
+.growl-item.ng-enter {
+    -webkit-animation: bounceIn 0.5s;
+    animation: bounceIn 0.5s;
+}
+
