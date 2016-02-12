@@ -20,7 +20,10 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.view.JstlView;
 import org.springframework.web.servlet.view.UrlBasedViewResolver;
 
-import brest2016.spring.controller.Dao;
+import bean.Animation;
+import brest2016.spring.controller.DaoAnimation;
+import brest2016.spring.controller.GenericDao;
+import brest2016.spring.controller.GenericDaoJpaImpl;
 
 /**
  * @author oarcher
@@ -34,16 +37,16 @@ import brest2016.spring.controller.Dao;
 public class WebAppConfig {
 
 	// Le serveur est RESTFULL, les vue ne sont pas gérées pour l'instant
-	@Bean
-	public UrlBasedViewResolver initUrlBasedViewResolver() {
-
-		System.out.println("Mise en place du reslover sur les vues");
-		UrlBasedViewResolver resolver = new UrlBasedViewResolver();
-		resolver.setPrefix("/WEB-INF/views/");
-		resolver.setSuffix(".jsp");
-		resolver.setViewClass(JstlView.class);
-		return resolver;
-	}
+	// @Bean
+	// public UrlBasedViewResolver initUrlBasedViewResolver() {
+	//
+	// System.out.println("Mise en place du reslover sur les vues");
+	// UrlBasedViewResolver resolver = new UrlBasedViewResolver();
+	// resolver.setPrefix("/WEB-INF/views/");
+	// resolver.setSuffix(".jsp");
+	// resolver.setViewClass(JstlView.class);
+	// return resolver;
+	// }
 
 	// remplace persitence.xml
 	// TODO application.property brest2016/src/main/resources
@@ -73,33 +76,39 @@ public class WebAppConfig {
 	@Autowired
 	@Bean(name = "entityManager")
 	public EntityManager getEntityManager(EntityManagerFactory entityManagerFactory) {
+		System.out.println("mise en place du bean entityManager dans WebAppConfig");
 		EntityManager entityManager = entityManagerFactory.createEntityManager();
 		return entityManager;
 	}
-	
+
 	// TODO le name="Dao" n'est valable que pour Animation. Si j'ai plusieurs
 	// Dao,
 	// Y a t il moyen de ne pas tous les lister ici ?
 	@Autowired
-	@Bean(name = "Dao")
-	public Dao getUserDao(EntityManager entityManager) { // TODO Dao devrait
+	@Bean(name = "DaoAnimation")
+	public DaoAnimation getUserDao(EntityManager entityManager) { // TODO GenericDaoJpaImpl devrait
 															// etre une
 															// interface
-		return new Dao(entityManager); // TODO Dao devrait etre une
+		System.out.println("WebAppConfig : new daoAnimation");
+		DaoAnimation daoAnimation = new DaoAnimation();
+		
+		
+		return daoAnimation; // OK GenericDaoJpaImpl est bien une
 										// implementation
 	}
-	
+
 	/**
-	 * RequestContextListener:
-	 * 		Permet de recuperer le 'root path' ('/brest2016') dans le controleur
+	 * RequestContextListener: Permet de recuperer le 'root path' ('/brest2016')
+	 * dans le controleur
+	 * 
 	 * @return
 	 */
 	@Autowired
 	@Bean
-	public RequestContextListener requestContextListener(){
+	public RequestContextListener requestContextListener() {
 		System.out.println("requestContextListener");
-	    return new RequestContextListener();
-	    
-	} 
+		return new RequestContextListener();
+
+	}
 
 }

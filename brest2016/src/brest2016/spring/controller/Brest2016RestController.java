@@ -5,23 +5,15 @@ package brest2016.spring.controller;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
 import javax.validation.Valid;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-/**
- * @author oarcher
- *
- */
-
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
@@ -84,9 +76,13 @@ public class Brest2016RestController {
 	 * Il est '@Autowired', c'est a dire qu'il est géré par spring (voir WebappConfig)
 	 * 
 	 */
+//	@Autowired
+//	Dao dao;
+	//@Autowired
+	//GenericDaoJpaImpl genericDaoJpaImpl;
 	@Autowired
-	Dao dao;
-
+	DaoAnimation daoAnimation;
+	
 	// Non REST ...
 	//
 	// @RequestMapping(value = "/acceuil.htm")
@@ -128,7 +124,7 @@ public class Brest2016RestController {
 		// test par curl -v -H "Content-Type: application/json" -X POST -d '{"nom":"testCurl","descr":"test descr"}' http://localhost:5913/brest2016/rest/animation.json
 		System.out.println("Mapping POST (Create ) animation.json");
 		
-		animation=dao.createAnimation(animation);  // animation n'avait pas d'id, il en a maintenant un généré par le dao
+		animation=daoAnimation.create(animation);  // animation n'avait pas d'id, il en a maintenant un généré par le dao
 
 		// mise en place de l'url de redirection
 		// recuperation du context root (/brest2016) pour contruire l'url de redirection
@@ -149,7 +145,7 @@ public class Brest2016RestController {
 	@RequestMapping(value = "/rest/animation.json", method = RequestMethod.GET)
 	public ResponseEntity<?> queryAnimation() {
 		System.out.println("Mapping Query all (Read ) /animation.json");
-		return new ResponseEntity<>(dao.readAnimation(),HttpStatus.OK);
+		return new ResponseEntity<>(daoAnimation.read(),HttpStatus.OK);
 
 	}
 	
@@ -162,7 +158,7 @@ public class Brest2016RestController {
 	public ResponseEntity<?> getAnimation(@PathVariable String strid) throws NumberFormatException {
 		System.out.println("Mapping GET (One Read " + strid + ") /animation.json");
 		int id=Integer.parseInt(strid);  // throws NumberFormatException
-		Animation animation = dao.readAnimation(id);  // out of bounds non géré ..
+		Animation animation = daoAnimation.read(id);  // out of bounds non géré ..
 		return new ResponseEntity<>(animation ,HttpStatus.OK);
 		
 	}
@@ -178,16 +174,20 @@ public class Brest2016RestController {
 	public ResponseEntity<?> DestroyAnimation(@PathVariable String strid) throws MethodArgumentNotValidException {
 		System.out.println("Mapping Destroye (One Read " + strid + ") /animation.json");
 		int id=Integer.parseInt(strid);  // throws NumberFormatException
-		int result=dao.destroyAnimation(id);  // out of bounds non géré ..
+		Animation animation = daoAnimation.read(id);
+		daoAnimation.delete(animation);  // out of bounds non géré ..
+		return new ResponseEntity<>(null,HttpStatus.OK);
 		
-		
-		if (result == 0){
-			// pas d'animation trouvée ...
-			//throw new MethodArgumentNotValidException(null, null);
-			return new ResponseEntity<>("id animation non trouvé" , null ,HttpStatus.NOT_FOUND);
-		} else {
-			return new ResponseEntity<>(null,HttpStatus.OK);
-		}
+//		int result=dao.delete(id);  // out of bounds non géré ..
+//		
+//		
+//		if (result == 0){
+//			// pas d'animation trouvée ...
+//			//throw new MethodArgumentNotValidException(null, null);
+//			return new ResponseEntity<>("id animation non trouvé" , null ,HttpStatus.NOT_FOUND);
+//		} else {
+//			return new ResponseEntity<>(null,HttpStatus.OK);
+//		}
 	}
 	
 

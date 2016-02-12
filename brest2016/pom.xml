@@ -17,6 +17,8 @@
 	<properties>
 		<jdk.version>1.8</jdk.version>
 		<spring.version>4.2.4.RELEASE</spring.version>
+		<spring-data.version>2.4.2.RELEASE</spring-data.version>
+		<spring-data-jpa.version>1.9.2.RELEASE</spring-data-jpa.version>
 		<jstl.version>1.2</jstl.version>
 		<javax.validation.version>1.1.0.Final</javax.validation.version>
 		<hibernate-validator.version>5.2.2.Final</hibernate-validator.version>
@@ -106,6 +108,22 @@
 			<version>${spring.version}</version>
 		</dependency>
 
+
+
+		<!-- <dependency> -->
+		<!-- <groupId>org.springframework.data</groupId> -->
+		<!-- <artifactId>spring-data-rest-webmvc</artifactId> -->
+		<!-- <version>${spring-data.version}</version> -->
+		<!-- </dependency> -->
+
+		<!-- <dependency> -->
+		<!-- <groupId>org.springframework.data</groupId> -->
+		<!-- <artifactId>spring-data-jpa</artifactId> -->
+		<!-- <version>${spring-data-jpa.version}</version> -->
+		<!-- </dependency> -->
+
+
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -113,17 +131,17 @@
 			<scope>test</scope>
 		</dependency>
 
-<!-- 	<dependency> -->
-<!-- 		<groupId>javax.persistence</groupId> -->
-<!-- 		<artifactId>persistence-api</artifactId> -->
-<!-- 		<version>1.0.2</version> -->
-<!-- 	</dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>javax.persistence</groupId> -->
+		<!-- <artifactId>persistence-api</artifactId> -->
+		<!-- <version>1.0.2</version> -->
+		<!-- </dependency> -->
 
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.eclipse.persistence</groupId> -->
-<!-- 			<artifactId>javax.persistence</artifactId> -->
-<!-- 			<version>2.1.0</version> -->
-<!-- 		</dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.eclipse.persistence</groupId> -->
+		<!-- <artifactId>javax.persistence</artifactId> -->
+		<!-- <version>2.1.0</version> -->
+		<!-- </dependency> -->
 
 
 		<dependency>
