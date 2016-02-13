@@ -3,27 +3,26 @@
  */
 package brest2016.spring.init;
 
+import java.net.URI;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import javax.sql.DataSource;
 
-import org.apache.commons.dbcp.BasicDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 //import org.apache.tomcat.jdbc.pool.DataSource;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
+import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
+import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
+import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.view.JstlView;
-import org.springframework.web.servlet.view.UrlBasedViewResolver;
-
-import bean.Animation;
-import brest2016.spring.controller.DaoAnimation;
-import brest2016.spring.controller.GenericDao;
-import brest2016.spring.controller.GenericDaoJpaImpl;
 
 /**
  * @author oarcher
@@ -33,9 +32,15 @@ import brest2016.spring.controller.GenericDaoJpaImpl;
 @Configuration // Class de configuartion spring
 @EnableTransactionManagement
 @EnableWebMvc
-@ComponentScan("brest2016") // package a scanner pour le controller
-public class WebAppConfig {
+// @ComponentScan("brest2016") // package a scanner pour le controller (essayer
+// avec brest2016.spring.controller
 
+// @ComponentScan("brest2016")
+@EnableJpaRepositories("brest2016.spring.data")  // les data repository a scaner
+
+@Import(RepositoryRestMvcConfiguration.class) // spring data rest
+												// http://docs.spring.io/spring-data/rest/docs/2.4.2.RELEASE/reference/html/
+public class WebAppConfig {
 	// Le serveur est RESTFULL, les vue ne sont pas gérées pour l'instant
 	// @Bean
 	// public UrlBasedViewResolver initUrlBasedViewResolver() {
@@ -61,10 +66,25 @@ public class WebAppConfig {
 	// return dataSource;
 	// }
 
-	/*
-	 * Configuration hibernate
-	 */
-	// TODO pourqoi ne pas tout mettre dans le bean entityManager ?
+	@Bean
+	public RepositoryRestConfigurer repositoryRestConfigurer() {
+		return new RepositoryRestConfigurerAdapter() {
+
+			@Override
+			public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+				System.out.println("spring data rest congig");
+				config.setBasePath("/rest");
+				// voir
+				// http://docs.spring.io/spring-data/rest/docs/2.4.2.RELEASE/reference/html/#_changing_other_spring_data_rest_properties
+				// pour les autres options de configurations
+			}
+		};
+	}
+
+	// /*
+	// * Configuration hibernate
+	// */
+	// // TODO pourqoi ne pas tout mettre dans le bean entityManager ?
 	@Autowired
 	@Bean(name = "entityManagerFactory")
 	public EntityManagerFactory getEntityManagerFactory() {
@@ -81,34 +101,44 @@ public class WebAppConfig {
 		return entityManager;
 	}
 
-	// TODO le name="Dao" n'est valable que pour Animation. Si j'ai plusieurs
-	// Dao,
-	// Y a t il moyen de ne pas tous les lister ici ?
-	@Autowired
-	@Bean(name = "DaoAnimation")
-	public DaoAnimation getUserDao(EntityManager entityManager) { // TODO GenericDaoJpaImpl devrait
-															// etre une
-															// interface
-		System.out.println("WebAppConfig : new daoAnimation");
-		DaoAnimation daoAnimation = new DaoAnimation();
-		
-		
-		return daoAnimation; // OK GenericDaoJpaImpl est bien une
-										// implementation
-	}
-
-	/**
-	 * RequestContextListener: Permet de recuperer le 'root path' ('/brest2016')
-	 * dans le controleur
-	 * 
-	 * @return
-	 */
-	@Autowired
 	@Bean
-	public RequestContextListener requestContextListener() {
-		System.out.println("requestContextListener");
-		return new RequestContextListener();
+	public PlatformTransactionManager transactionManager() {
 
+		JpaTransactionManager txManager = new JpaTransactionManager();
+		txManager.setEntityManagerFactory(getEntityManagerFactory());
+		return txManager;
 	}
+	//
+	// // TODO le name="Dao" n'est valable que pour Animation. Si j'ai plusieurs
+	// // Dao,
+	// // Y a t il moyen de ne pas tous les lister ici ?
+	// @Autowired
+	// @Bean(name = "DaoAnimation")
+	// public DaoAnimation getUserDao(EntityManager entityManager) { // TODO
+	// // GenericDaoJpaImpl
+	// // devrait
+	// // etre une
+	// // interface
+	// System.out.println("WebAppConfig : new daoAnimation");
+	// DaoAnimation daoAnimation = new DaoAnimation();
+	//
+	// return daoAnimation; // OK GenericDaoJpaImpl est bien une
+	// // implementation
+	// }
+	//
+	// /**
+	// * RequestContextListener: Permet de recuperer le 'root path'
+	// ('/brest2016')
+	// * dans le controleur
+	// *
+	// * @return
+	// */
+	// @Autowired
+	// @Bean
+	// public RequestContextListener requestContextListener() {
+	// System.out.println("requestContextListener");
+	// return new RequestContextListener();
+	//
+	// }
 
 }

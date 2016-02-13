@@ -32,7 +32,7 @@ public class Animation implements Serializable{
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column
-    private int id;
+    private Long id;
     
 	@NotBlank(message = "ne peux pas être vide")
 	private String nom="";
@@ -42,7 +42,7 @@ public class Animation implements Serializable{
 	public Animation() {
 	}
 
-	public Animation(int id, String nom, String descr) {
+	public Animation(Long id, String nom, String descr) {
 		this.id=id;
 		this.nom=nom;
 		this.descr=descr;
@@ -61,11 +61,11 @@ public class Animation implements Serializable{
 		return "id : " + this.id + " nom : " + this.nom + " descr : " + this.descr;
 	}
 	
-	public int getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
