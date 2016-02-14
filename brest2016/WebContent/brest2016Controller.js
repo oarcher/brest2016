@@ -14,7 +14,7 @@ angular.module('brest2016App').controller('Brest2016Controller', brest2016Contro
  * @param growl
  * @param Animation
  */
-function brest2016Controller($resource, $http, $parse, growl, Brest2016Factory, Hateoas) {
+function brest2016Controller($scope, growl, Brest2016Factory, Hateoas) {
 	// on préfère l'utilisation de 'this' a $scope
 
 	/**
@@ -31,18 +31,16 @@ function brest2016Controller($resource, $http, $parse, growl, Brest2016Factory, 
 	/**
 	 * déclaration des variables et methodes.
 	 * 
-	 * Le faire ici permet d'avoir une vue syntetique du controller, un peu a
-	 * la facon d'une interface.
+	 * Le faire ici permet d'avoir une vue syntetique du controller, un peu a la
+	 * facon d'une interface.
 	 */
 
-//	vm.query = query;
-//	vm.create = create;
-//	vm.remove = remove;
-//	vm.profile = profile;
+	// vm.query = query;
+	// vm.create = create;
+	// vm.remove = remove;
+	// vm.profile = profile;
 	// vm.read = read;
-
 	// vm.animations = []; // contiendra les animations
-
 	/** l'objet animation (JSON) */
 	vm.animation = {
 		nom : "",
@@ -53,15 +51,23 @@ function brest2016Controller($resource, $http, $parse, growl, Brest2016Factory, 
 	 * Action a faire a l'initialisation du controller FIXME : Que faire si
 	 * plusieurs <form> utilise ce controller ?
 	 */
-	
 
-	
-	
-	// vm.animations = vm.query('animations');
-	vm.hateoas_animations = new Hateoas('animations');
-	
-	
-	vm.animations = vm.hateoas_animations.query();
+	// on demande au serveur rest hateoas la liste des objets qu'il gere
+	// var hateoas_root = new Hateoas('');
+	// var restobjects_list = hateoas_root.profile() // FIXME promise ....
 
 
+	// pour chaque objet, on créé une instance hateoas, visible dans vm
+	var restobjects_list = [ "animations", "horaires", "visiteurs" ];
+	vm.hateoas = {};
+	restobjects_list.forEach(function(restobject) {
+		vm.hateoas[restobject] = new Hateoas(restobject);
+		console.log('visible dans le scope : vm.hateoas.' + restobject);
+
+	});
+
+	
+	vm.animation=vm.hateoas.animations.element;
+	
+	
 }
