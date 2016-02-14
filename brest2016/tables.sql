@@ -24,6 +24,17 @@ CREATE TABLE IF NOT EXISTS `oarcher_visiteur` (
   PRIMARY KEY (`id`)
 ) ;
 
+CREATE TABLE IF NOT EXISTS `oarcher_animation_horaire` (
+  `idAnimation` INT NOT NULL,
+  `idHoraire` INT NOT NULL
+) ;
+
+CREATE TABLE IF NOT EXISTS `oarcher_visiteur_horaire` (
+  `idVisiteur` INT NOT NULL,
+  `idHoraire` INT NOT NULL
+) ;
+
+
 --
 -- Contenu de la table `oarcher_horaire`
 --

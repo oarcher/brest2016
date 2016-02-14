@@ -14,7 +14,7 @@ angular.module('brest2016App').controller('Brest2016Controller', brest2016Contro
  * @param growl
  * @param Animation
  */
-function brest2016Controller($resource, $http, $parse, growl, Brest2016Factory) {
+function brest2016Controller($resource, $http, $parse, growl, Brest2016Factory, Hateoas) {
 	// on préfère l'utilisation de 'this' a $scope
 
 	/**
@@ -35,9 +35,10 @@ function brest2016Controller($resource, $http, $parse, growl, Brest2016Factory) 
 	 * la facon d'une interface.
 	 */
 
-	vm.query = query;
-	vm.create = create;
-	vm.remove = remove;
+//	vm.query = query;
+//	vm.create = create;
+//	vm.remove = remove;
+//	vm.profile = profile;
 	// vm.read = read;
 
 	// vm.animations = []; // contiendra les animations
@@ -52,51 +53,15 @@ function brest2016Controller($resource, $http, $parse, growl, Brest2016Factory) 
 	 * Action a faire a l'initialisation du controller FIXME : Que faire si
 	 * plusieurs <form> utilise ce controller ?
 	 */
+	
+
+	
+	
 	// vm.animations = vm.query('animations');
-	vm.animations = Brest2016Factory.hateoas('animations').query();
+	vm.hateoas_animations = new Hateoas('animations');
+	
+	
+	vm.animations = vm.hateoas_animations.query();
 
-	/**
-	 * implementation des fonctions
-	 */
 
-	/**
-	 * query : recupere la liste des elements restobjet est une string contenant
-	 * le nom de l'objet rest ('animations', 'utilisateurs', etc ...) la liste
-	 * est disponible a l'url /brest2016/rest/profile
-	 */
-	function query(restobject) {
-		return Brest2016Factory.hateoas(restobject).query();
-	}
-
-	/**
-	 * create : creation d'element restobject et la cible ou doit etre créé
-	 * l'élément element est un json, simple, sans id
-	 */
-	function create(restobject, element) {
-		Brest2016Factory.hateoas(restobject).create(element, function(created) {
-			// ajout a la liste
-			console.log('retour de create' + JSON.stringify(created));
-			// restobject a le meme nom que la liste des élément dans vm (par ex vm.animation)
-			// $parse(restobject)(vm) permet de récupérer la variable, par son nom
-			$parse(restobject)(vm).push(created);  // ajout de l'element créé a la liste
-			// par convention, l'element courant de la liste restobject
-			// est restobject, sans le 's' a la fin (par ex vm.animation)
-			$parse(restobject.replace(/s$/, "")).assign(vm,{}); // vide l'élément courant
-		});
-	}
-
-	/**
-	 * remove : suppression d'un élément element est un object hateoas, il a
-	 * donc un id et une url, ce qui dispense de passer restobject en parametre
-	 */
-	function remove(element) {
-		Brest2016Factory.hateoas('').remove(element, function(removed) {
-			// on retire l'element de la liste
-			// la liste est un variable du scope 'vm' qui a le meme nom que le restobject (par exemple 'animations')
-			var restobject = Brest2016Factory.getRestobject(element);
-			var elements= $parse(restobject)(vm);
-			var index = elements.indexOf(element);			
-			elements.splice(index, 1);
-		});
-	}
 }

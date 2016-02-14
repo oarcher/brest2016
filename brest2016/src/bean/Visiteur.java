@@ -30,8 +30,7 @@ public class Visiteur implements Serializable{
 	 */
     
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    @Column
+    @GeneratedValue(strategy=GenerationType.AUTO)
     private Long id;
     
 	@NotBlank(message = "ne peux pas être vide")
@@ -39,35 +38,35 @@ public class Visiteur implements Serializable{
 	@NotBlank(message="ne peux pas être vide")
 	private String prenom="";
 	
-	public Visiteur() {
-	}
+//	public Visiteur() {
+//	}
 
-	public Visiteur(Long id, String nom, String prenom) {
-		this.id=id;
-		this.nom=nom;
-		this.prenom=prenom;
-	}
+//	public Visiteur(Long id, String nom, String prenom) {
+//		this.id=id;
+//		this.nom=nom;
+//		this.prenom=prenom;
+//	}
 	
-	// copy constructor
-	public Visiteur(Visiteur animation){
-		this.id=animation.id;
-		this.nom=animation.nom;
-		this.prenom=animation.prenom;
-	}
+//	// copy constructor
+//	public Visiteur(Visiteur animation){
+//		this.id=animation.id;
+//		this.nom=animation.nom;
+//		this.prenom=animation.prenom;
+//	}
 	
 	
 
-	public String toString(){
-		return "id : " + this.id + " nom : " + this.nom + " prenom : " + this.prenom;
-	}
-	
-	public Long getId() {
-		return id;
-	}
+//	public String toString(){
+//		return "id : " + this.id + " nom : " + this.nom + " prenom : " + this.prenom;
+//	}
+//	
+//	public Long getId() {
+//		return id;
+//	}
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+//	public void setId(Long id) {
+//		this.id = id;
+//	}
 
 	public String getNom() {
 		return nom;

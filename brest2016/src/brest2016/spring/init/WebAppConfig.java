@@ -67,20 +67,20 @@ public class WebAppConfig {
 	// return dataSource;
 	// }
 
-	@Bean
-	public RepositoryRestConfigurer repositoryRestConfigurer() {
-		return new RepositoryRestConfigurerAdapter() {
-
-			@Override
-			public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
-				System.out.println("spring data rest config");
-				//config.setBasePath("/rest");
-				// voir
-				// http://docs.spring.io/spring-data/rest/docs/2.4.2.RELEASE/reference/html/#_changing_other_spring_data_rest_properties
-				// pour les autres options de configurations
-			}
-		};
-	}
+//	@Bean   // spring 2.4
+//	public RepositoryRestConfigurer repositoryRestConfigurer() {
+//		return new RepositoryRestConfigurerAdapter() {
+//
+//			@Override
+//			public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+//				System.out.println("spring data rest config");
+//				//config.setBasePath("/rest");
+//				// voir
+//				// http://docs.spring.io/spring-data/rest/docs/2.4.2.RELEASE/reference/html/#_changing_other_spring_data_rest_properties
+//				// pour les autres options de configurations
+//			}
+//		};
+//	}
 
 	 /*
 	 * Configuration persistence
