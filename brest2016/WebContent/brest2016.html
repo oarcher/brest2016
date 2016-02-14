@@ -10,6 +10,7 @@
 <script type="text/javascript" src="angular.js"></script>
 <script type="text/javascript" src="ui-bootstrap-tpls-1.1.2.js"></script>
 <script type="text/javascript" src="angular-resource.js"></script>
+<script type="text/javascript" src="angular-spring-data-rest.js"></script>
 <script type="text/javascript" src="angular-growl.js"></script>
 <script type="text/javascript" src="angular-sanitize.js"></script>
 <script type="text/javascript" src="brest2016Module.js"></script>
@@ -25,13 +26,15 @@
 		<!-- Faire tres attention aux form imbriquées ( faire plusieurs controller ? Voir 'as' ?) -->
 		<form class="form-horizontal" role="form"
 			ng-controller="Brest2016Controller as vm"
-			ng-submit="vm.createAnimation(vm.animation)">
+			ng-submit="vm.create('animations',vm.animation)">
 			<label class="control-label">Animation</label> <input type="text"
 				ng-model="vm.animation.nom" /> <input type="text"
 				ng-model="vm.animation.descr" />
 			<button class="btn btn-primary">Add</button>
 			<div ng-show="vm.animations.length" ng-repeat="animation in vm.animations">
-				<li>id: {{animation.id}} nom: {{animation.nom}} descr: {{animation.descr}}
+				<li>id: {{animation.id}} nom: {{animation.nom}} descr: {{animation.descr}} <span remove-on-click ng-click="vm.remove(animation)"> 
+    supprimer 
+</span>
 			</div>
 		</form>
 	</div>

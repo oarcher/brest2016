@@ -12,6 +12,7 @@ import javax.persistence.Persistence;
 import org.springframework.beans.factory.annotation.Autowired;
 //import org.apache.tomcat.jdbc.pool.DataSource;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -35,7 +36,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 // @ComponentScan("brest2016") // package a scanner pour le controller (essayer
 // avec brest2016.spring.controller
 
-// @ComponentScan("brest2016")
+@ComponentScan("brest2016.spring.controller")
 @EnableJpaRepositories("brest2016.spring.data")  // les data repository a scaner
 
 @Import(RepositoryRestMvcConfiguration.class) // spring data rest
@@ -72,8 +73,8 @@ public class WebAppConfig {
 
 			@Override
 			public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
-				System.out.println("spring data rest congig");
-				config.setBasePath("/rest");
+				System.out.println("spring data rest config");
+				//config.setBasePath("/rest");
 				// voir
 				// http://docs.spring.io/spring-data/rest/docs/2.4.2.RELEASE/reference/html/#_changing_other_spring_data_rest_properties
 				// pour les autres options de configurations
@@ -81,21 +82,24 @@ public class WebAppConfig {
 		};
 	}
 
-	// /*
-	// * Configuration hibernate
-	// */
-	// // TODO pourqoi ne pas tout mettre dans le bean entityManager ?
-	@Autowired
-	@Bean(name = "entityManagerFactory")
-	public EntityManagerFactory getEntityManagerFactory() {
-		// src/META-INF/persistence.xml
+	 /*
+	 * Configuration persistence
+	 * spring-data-jpa a besoin des bean entityManagerFactory , entityManager
+	 * et transactionManager
+	 * 
+	 */
+	
+	//@Autowired
+	@Bean
+	public EntityManagerFactory entityManagerFactory() {
+		//voir persistence-unit name="brest2016" dans src/META-INF/persistence.xml
 		EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("brest2016");
 		return entityManagerFactory;
 	}
 
-	@Autowired
-	@Bean(name = "entityManager")
-	public EntityManager getEntityManager(EntityManagerFactory entityManagerFactory) {
+	//@Autowired
+	@Bean
+	public EntityManager entityManager(EntityManagerFactory entityManagerFactory) {
 		System.out.println("mise en place du bean entityManager dans WebAppConfig");
 		EntityManager entityManager = entityManagerFactory.createEntityManager();
 		return entityManager;
@@ -105,40 +109,8 @@ public class WebAppConfig {
 	public PlatformTransactionManager transactionManager() {
 
 		JpaTransactionManager txManager = new JpaTransactionManager();
-		txManager.setEntityManagerFactory(getEntityManagerFactory());
+		txManager.setEntityManagerFactory(entityManagerFactory());
 		return txManager;
 	}
-	//
-	// // TODO le name="Dao" n'est valable que pour Animation. Si j'ai plusieurs
-	// // Dao,
-	// // Y a t il moyen de ne pas tous les lister ici ?
-	// @Autowired
-	// @Bean(name = "DaoAnimation")
-	// public DaoAnimation getUserDao(EntityManager entityManager) { // TODO
-	// // GenericDaoJpaImpl
-	// // devrait
-	// // etre une
-	// // interface
-	// System.out.println("WebAppConfig : new daoAnimation");
-	// DaoAnimation daoAnimation = new DaoAnimation();
-	//
-	// return daoAnimation; // OK GenericDaoJpaImpl est bien une
-	// // implementation
-	// }
-	//
-	// /**
-	// * RequestContextListener: Permet de recuperer le 'root path'
-	// ('/brest2016')
-	// * dans le controleur
-	// *
-	// * @return
-	// */
-	// @Autowired
-	// @Bean
-	// public RequestContextListener requestContextListener() {
-	// System.out.println("requestContextListener");
-	// return new RequestContextListener();
-	//
-	// }
 
 }

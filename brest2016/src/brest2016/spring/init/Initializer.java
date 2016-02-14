@@ -36,8 +36,8 @@ public class Initializer implements WebApplicationInitializer {
 		// refusent de produire du
 		// json avec un mapping .htm, en provoquant une erreur 406 bad content
 		ServletRegistration.Dynamic servlet = servletContext.addServlet("rest_dispatcher", new DispatcherServlet(ctx));
-		// servlet.addMapping("/rest/*");  // ca marche y compris pour /WebContent/*.html, sauf pour le browser hal
-		servlet.addMapping("/"); // /WebContent/*.html doit etre déplacé dans src/ressources/static +config.setBasePath("/rest"); 
+		servlet.addMapping("/rest/*");  // ca marche y compris pour /WebContent/*.html, sauf pour le browser hal
+		//servlet.addMapping("/"); // /WebContent/*.html doit etre déplacé dans src/ressources/static +config.setBasePath("/rest"); 
 		servlet.setLoadOnStartup(1);
 
 //		// RestFull , pas de dispatcher htm pour l'instant

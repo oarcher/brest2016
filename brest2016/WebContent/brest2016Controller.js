@@ -4,8 +4,7 @@
 
 'use strict';
 
-angular.module('brest2016App').controller('Brest2016Controller',
-		brest2016Controller);
+angular.module('brest2016App').controller('Brest2016Controller', brest2016Controller);
 
 // brest2016Controller.$inject = [$http, 'AnimationService'];
 
@@ -15,7 +14,7 @@ angular.module('brest2016App').controller('Brest2016Controller',
  * @param growl
  * @param Animation
  */
-function brest2016Controller($resource, $http, growl, Animation) {
+function brest2016Controller($resource, $http, $parse, growl, Brest2016Factory) {
 	// on préfère l'utilisation de 'this' a $scope
 
 	/**
@@ -32,15 +31,16 @@ function brest2016Controller($resource, $http, growl, Animation) {
 	/**
 	 * déclaration des variables et methodes.
 	 * 
-	 * Le faire ici permet d'avoir une vue syntetique du co,ntroller, un peu a
+	 * Le faire ici permet d'avoir une vue syntetique du controller, un peu a
 	 * la facon d'une interface.
 	 */
 
-	vm.animations = []; // contiendra les animations
-	vm.createAnimation = createAnimation; // création d'animation (rest)
-	// vm.createAnimation = ajouterAnimation ;
-	vm.readAnimation = readAnimation; // recuperation des animations (rest)
-	// vm.readAnimation=listerAnimations;
+	vm.query = query;
+	vm.create = create;
+	vm.remove = remove;
+	// vm.read = read;
+
+	// vm.animations = []; // contiendra les animations
 
 	/** l'objet animation (JSON) */
 	vm.animation = {
@@ -52,132 +52,51 @@ function brest2016Controller($resource, $http, growl, Animation) {
 	 * Action a faire a l'initialisation du controller FIXME : Que faire si
 	 * plusieurs <form> utilise ce controller ?
 	 */
-	vm.animations = vm.readAnimation();
-	console.log('juste apres read : ' + JSON.stringify(vm.animations));
+	// vm.animations = vm.query('animations');
+	vm.animations = Brest2016Factory.hateoas('animations').query();
 
 	/**
 	 * implementation des fonctions
 	 */
 
-	function createAnimation(animation) {
-		console.log('createAnimation' + JSON.stringify(animation));
-		Animation.create(animation, function(animation) {
-			// l'animation a créer n'a pas d'id. C'est le role du serveur REST
-			// de le fournir.
-			// Le serveur Rest a fait du Post-Redirect-Get (
-			// https://fr.wikipedia.org/wiki/Post-Redirect-Get )
-			// pour rediriger vers l'url de l'animation créee
-			// Un code 302 (FOUND/Redirect) a été retourné avec le header
-			// 'Location' positionné sur l'url de l'animation crée
-			// Cette redirection a été automatiquement suivie, et animation
-			// contient maitenant un id
-			// animation est du type {id: 76, nom: "NOM", descr: "DESCR",
-			// $promise: Promise, $resolved: true}
-			growl.addSuccessMessage('createAnimation OK :' + JSON.stringify(animation));
+	/**
+	 * query : recupere la liste des elements restobjet est une string contenant
+	 * le nom de l'objet rest ('animations', 'utilisateurs', etc ...) la liste
+	 * est disponible a l'url /brest2016/rest/profile
+	 */
+	function query(restobject) {
+		return Brest2016Factory.hateoas(restobject).query();
+	}
 
-			//console.log('createAnimation OK :' + JSON.stringify(animation));
-			vm.animations.push(animation);
-			vm.animation = {};
-		}, function(response) {
-			growl.addWarnMessage('createAnimation NOK' + response.data.errors);
-			//growl.addErrorMessage('createAnimation NOK' + response.data.errors);
-			console.log('createAnimation NOK');
-			console.log(response);
+	/**
+	 * create : creation d'element restobject et la cible ou doit etre créé
+	 * l'élément element est un json, simple, sans id
+	 */
+	function create(restobject, element) {
+		Brest2016Factory.hateoas(restobject).create(element, function(created) {
+			// ajout a la liste
+			console.log('retour de create' + JSON.stringify(created));
+			// restobject a le meme nom que la liste des élément dans vm (par ex vm.animation)
+			// $parse(restobject)(vm) permet de récupérer la variable, par son nom
+			$parse(restobject)(vm).push(created);  // ajout de l'element créé a la liste
+			// par convention, l'element courant de la liste restobject
+			// est restobject, sans le 's' a la fin (par ex vm.animation)
+			$parse(restobject.replace(/s$/, "")).assign(vm,{}); // vide l'élément courant
 		});
 	}
 
 	/**
-	 * @return un tableau de 'promises' qui seront résolues dynamiquement
+	 * remove : suppression d'un élément element est un object hateoas, il a
+	 * donc un id et une url, ce qui dispense de passer restobject en parametre
 	 */
-	function readAnimation() {
-		// var animations = Animation.query().$promise.then(function(response){
-		// console.log('callback read : ' + JSON.stringify(response));
-		// });
-		var animations = Animation.query();
-		return animations;
-	}
-
-	function destroyAnimation(animation){
-		Animation.destroy(animation);
-	}
-	
-	
-	/**
-	 *  deprecated methods (utiliation de $http au lieu de $resource 
-	 * 
-	 */
-	
-	
-	
-	function ajouterAnimation() {
-		console.log('ajout avant $http animations=' + vm.animations.length);
-		// var animation = {
-		// nom : vm.nom,
-		// descr : vm.descr
-		// };
-		$http({
-			method : 'POST',
-			url : '/brest2016/rest/animation.json',
-			data : vm.animation
-		})
-				.then(
-						function(response) {
-							// en cas d'ajout OK, on
-							// remet a jour la liste des
-							// animations
-							console.log('ajout ok avant push animations='
-									+ vm.animations.length);
-							vm.animations.push(vm.animation);
-							// vm.listerAnimations();
-							console.log('ajout ok animations='
-									+ vm.animations.length);
-						},
-						function(response) {
-							var data = response.data, status = response.status, header = response.header, config = response.config;
-							console.log(data.errors);
-							// error handler
-						})
-	}
-
-	function listerAnimations() {
-		// depuis angular 1.2, les 'promise' ne sont plus 'unwrapped'
-		// (voir
-		// http://stackoverflow.com/questions/19472017/angularjs-promise-not-binding-to-template-in-1-2
-		// )
-		// ce qui oblige l'appelant a appeler lui meme le callback 'then' sur la
-		// promise
-		// une alternative pour garder un appel de fonction du style
-		// vm.animations=listerAnimations();
-		// et de retourner un tableau vide qui sera rempli par le callback
-		// 'then'
-
-		var animations = []; // tableau local destiné a recevoir les
-		// animations
-		$http({
-			method : 'GET',
-			url : '/brest2016/rest/animation.json'
-		}).then(
-		// callback asynchrone: serat executé /apres/ le reour de la fonction
-		function(response) {
-			// on rempli le tableau animations
-			// on ne peut pas ecrire "animations = response.data"
-			// car animation serait déréférencé et nom visible dans le retour de
-			// la fonction
-			response.data.forEach(function(item) {
-				animations.push(item);
-			});
-			console.log("nb animations =" + animations.length);
-
-		})
-		// la fonction retourne un tableau vide
-		// mais le callback 'then' le remplira plus tard
-		return animations;
-
-		// ca marche, mais c'est pas simple (promise ici ... )
-		// AnimationService.listerAnimations().then(function(data) {
-		// vm.animations = data;
-		// console.log(data);
-		// });
-		// console.log('fait');
+	function remove(element) {
+		Brest2016Factory.hateoas('').remove(element, function(removed) {
+			// on retire l'element de la liste
+			// la liste est un variable du scope 'vm' qui a le meme nom que le restobject (par exemple 'animations')
+			var restobject = Brest2016Factory.getRestobject(element);
+			var elements= $parse(restobject)(vm);
+			var index = elements.indexOf(element);			
+			elements.splice(index, 1);
+		});
 	}
 }
