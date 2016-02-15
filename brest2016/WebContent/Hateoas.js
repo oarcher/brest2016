@@ -4,7 +4,7 @@
 
 (function() {
 	'use strict';
-	angular.module('brest2016App').factory('Hateoas', function( $rootScope, $resource, SpringDataRestAdapter) {
+	angular.module('brest2016App').factory('Hateoas', function( $resource, SpringDataRestAdapter, Brest2016Factory) {
 
 		console.log('Factory hateoas init');
 
@@ -25,12 +25,8 @@
 				this.list = null;
 			}
 			
-			// element est un element de la liste, par exempe { nom : "" , descr : "" } pour animation 
-			// il sert aux formulaire, et est remis a zero lors de certaines 
-			// opérations ( create, etc )
+			// element a creer par create(). Il est sans id, et pas dans le format hateoas
 			this.element={};
-			// this.element =  { nom : "a ameliorer" , descr : "ausssi" };
-			
 		}
 
 		/**
@@ -79,30 +75,23 @@
 		 */
 
 		/**
-		 * create : creation d'un element element est l'element a creer (json),
-		 * sans id et sans tags hateoas callbackok est le callback a appeler
-		 * quand la promise est resolue. la reponse est l'objet créé
+		 * create : creation de l'element qui se trouve dans this.element
 		 */
 
 		function create() {
 			var url = apiurl + this.restobject;
 			console.log('create ' + this.restobject + ":" + JSON.stringify(this.element));
 			var self = this;
-			return $resource(url).save(this.element, function(created) {
+			$resource(url).save(this.element, function(created) {
 				console.log('callback create ok : ' + JSON.stringify(created));
 				self.list.push(created);
 				self.element={};
-//				var scope = angular.element($("#outer")).scope();
-//			    scope.$apply(function(){
-//			    	console.log('vide out of scope');
-//			        scope.element1 = {};
-//			    })
-//				console.log('root ', $rootScope);
 				return created;
-			}); // , callbackok, function(errors) {
-			// console.log(errors);
-			// showErrors(errors);
-			// });
+			}, function(error) {
+				Brest2016Factory.showErrors(error);
+				console.log(error);
+			}); 
+			
 		}
 
 		/**

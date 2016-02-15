@@ -24,14 +24,10 @@
 <body ng-controller="Brest2016Controller as vm">
 	<div data-growl=""></div>
 	<div>
-<!-- 			ng-submit="vm.hateoas.animations.create(vm.hateoas.animations.element)"> -->
-<!-- 			<label class="control-label">Animation</label>  -->
-<!-- 			<input type="text" -->
-<!-- 				ng-model="vm.hateoas.animations.element.nom" /> <input type="text" -->
-<!-- 				ng-model="vm.hateoas.animations.element.descr" /> -->
-<!-- 			<button class="btn btn-primary">Add</button> -->
 		<form class="form-horizontal" role="form"
 			ng-submit="vm.hateoas.animations.create()">
+			<!-- 			on ne peut pas passer l'animation en parametre de create, -->
+			<!-- 			car create() remet a "" l'element créé. -->
 			<label class="control-label">Animation</label> 
 			<input type="text"
 				ng-model="vm.hateoas.animations.element.nom" /> <input type="text"
