@@ -6,15 +6,15 @@
 
 angular.module('brest2016App').controller('Brest2016Controller', brest2016Controller);
 
-// brest2016Controller.$inject = [$http, 'AnimationService'];
+// brest2016Controller.$inject = [$http, 'StandService'];
 
 /**
  * @param $resource
  * @param $http
  * @param growl
- * @param Animation
+ * @param Stand
  */
-function brest2016Controller($scope, growl, Brest2016Factory, Hateoas) {
+function brest2016Controller(growl, Brest2016Factory, Hateoas) {
 	// on préfère l'utilisation de 'this' a $scope
 
 	/**
@@ -40,12 +40,12 @@ function brest2016Controller($scope, growl, Brest2016Factory, Hateoas) {
 	// vm.remove = remove;
 	// vm.profile = profile;
 	// vm.read = read;
-	// vm.animations = []; // contiendra les animations
-	/** l'objet animation (JSON) */
-	vm.animation = {
-		nom : "",
-		descr : ""
-	};
+	// vm.stands = []; // contiendra les stands
+	/** l'objet stand (JSON) */
+//	vm.stand = {
+//		nom : "",
+//		descr : ""
+//	};
 
 	/**
 	 * Action a faire a l'initialisation du controller FIXME : Que faire si
@@ -58,7 +58,7 @@ function brest2016Controller($scope, growl, Brest2016Factory, Hateoas) {
 
 
 	// pour chaque objet, on créé une instance hateoas, visible dans vm
-	var restobjects_list = [ "animations", "horaires", "visiteurs" ];
+	var restobjects_list = [ "stands", "horaires", "visiteurs" ];
 	vm.hateoas = {};
 	restobjects_list.forEach(function(restobject) {
 		vm.hateoas[restobject] = new Hateoas(restobject);
@@ -67,7 +67,8 @@ function brest2016Controller($scope, growl, Brest2016Factory, Hateoas) {
 	});
 
 	
-	vm.animation=vm.hateoas.animations.element;
+	//vm.hateoas['xxxx'] = new Hateoas('visiteurs/1/stand');
+	
 	
 	
 }

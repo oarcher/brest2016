@@ -7,6 +7,8 @@ import org.hibernate.validator.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -26,8 +28,8 @@ import javax.validation.constraints.Size;
  */
 
 @Entity
-@Table(name = "oarcher_animation")
-public class Animation implements Serializable {
+@Table(name = "oarcher_stand")
+public class Stand implements Serializable {
 
 	private static final long serialVersionUID = -7788619177798333712L;
 
@@ -45,24 +47,34 @@ public class Animation implements Serializable {
 	@Size(min = 3, message = "au moins 3 caractères")
 	private String descr = "";
 
-	@OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-	@JoinTable(name = "oarcher_animation_horaire", joinColumns = @JoinColumn(name = "idAnimation") , inverseJoinColumns = @JoinColumn(name = "idHoraire") )
-	private Collection<Horaire> horaire = new ArrayList<Horaire>();
+	
+	@OneToMany
+	@JoinTable(name = "oarcher_activite_stand", joinColumns = @JoinColumn(name = "idStand") , inverseJoinColumns = @JoinColumn(name = "idActivite") )
+	private Collection<Activite> activite = new ArrayList<Activite>();
 
-	public Animation() {
+	
+	// la liste des horaires d'ouverture pour le stand
+	// un horaire d'ouverture implique la creation d'une activite
+	@OneToMany
+	@JoinTable(name = "oarcher_stand_horaire", joinColumns = @JoinColumn(name = "idStand") , inverseJoinColumns = @JoinColumn(name = "idHoraire") )
+	private Set<Horaire> horaire = new HashSet<Horaire>();
+
+	
+	// 
+	public Stand() {
 	}
 
-	public Animation(Long id, String nom, String descr) {
+	public Stand(Long id, String nom, String descr) {
 		this.id = id;
 		this.nom = nom;
 		this.descr = descr;
 	}
 
 	// copy constructor
-	public Animation(Animation animation) {
-		this.id = animation.id;
-		this.nom = animation.nom;
-		this.descr = animation.descr;
+	public Stand(Stand stand) {
+		this.id = stand.id;
+		this.nom = stand.nom;
+		this.descr = stand.descr;
 	}
 
 	public String toString() {
@@ -93,12 +105,12 @@ public class Animation implements Serializable {
 		this.descr = descr;
 	}
 
-	public Collection<Horaire> getHoraire() {
-		return horaire;
-	}
-
-	public void setHoraire(Collection<Horaire> horaire) {
-		this.horaire = horaire;
-
-	}
+//	public Collection<Horaire> getHoraire() {
+//		return horaire;
+//	}
+//
+//	public void setHoraire(Collection<Horaire> horaire) {
+//		this.horaire = horaire;
+//
+//	}
 }

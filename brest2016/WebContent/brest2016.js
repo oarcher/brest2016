@@ -14,13 +14,13 @@ angular
 
 
 
-function Brest2016Control(AnimationService){
+function Brest2016Control(StandService){
 	vm=this;
-	vm.salut = AnimationService.salut();
+	vm.salut = StandService.salut();
 }
 
 
-brest2016App.service('AnimationService', function() {
+brest2016App.service('StandService', function() {
 	this.salut= function(){
 		alert('service');
 		return "salut service";
@@ -40,22 +40,22 @@ brest2016App.service('AnimationService', function() {
 //	vm.hello = hello;
 //	vm.salut = aniamtionService.salut();
 //	// alert('juste apres =');
-//	vm.listerAnimations = listerAnimations;
+//	vm.listerStands = listerStands;
 //
 //	function hello() {
 //		alert('hello truc');
 //		return 'hello world';
 //	}
 //
-//	function listerAnimations($http) {
+//	function listerStands($http) {
 //		alert('lister');
 //		$http({
 //			method : 'GET',
-//			url : 'listeranimations.json',
+//			url : 'listerstands.json',
 //		}).then(function(response) {
 //			var data = response.data;
-//			vm.animations = data;
-//			alert("nb animations =" + vm.animations.length)
+//			vm.stands = data;
+//			alert("nb stands =" + vm.stands.length)
 //		});
 //	}
 //
@@ -77,24 +77,24 @@ brest2016App.service('AnimationService', function() {
 //
 // vm.test = 'hello';
 //	
-// vm.listerAnimations = listerAnimations;
-// vm.ajouterAnimations = ajouterAnimation;
+// vm.listerStands = listerStands;
+// vm.ajouterStands = ajouterStand;
 //
-// function listerAnimations($http) {
+// function listerStands($http) {
 // $http({
 // method : 'GET',
-// url : 'listeranimations.json',
+// url : 'listerstands.json',
 // }).then(function(response) {
 // var data = response.data;
-// vm.animations = data;
-// alert("nb animations =" + vm.animations.length)
+// vm.stands = data;
+// alert("nb stands =" + vm.stands.length)
 // });
 // }
 //
-// function ajouterAnimation($http) {
+// function ajouterStand($http) {
 // $http({
 // method : 'POST',
-// url : 'ajouteranimation.json',
+// url : 'ajouterstand.json',
 // data : {
 // nom : vm.nom,
 // texte : vm.texte,
@@ -104,8 +104,8 @@ brest2016App.service('AnimationService', function() {
 // function(response) {
 // // en cas d'ajout OK, on
 // // remet a jour la liste des
-// // animations
-// vm.listerAnimations();
+// // stands
+// vm.listerStands();
 // },
 // function(response) {
 // var data = response.data, status = response.status, header = response.header,
@@ -128,24 +128,24 @@ brest2016App.service('AnimationService', function() {
 //
 // // alert("Brest2016Control");
 //
-// $scope.listerAnimations = function() {
+// $scope.listerStands = function() {
 // // alert("creerClient");
 // $http({
 // method : 'GET',
-// url : 'listeranimations.json',
+// url : 'listerstands.json',
 // }).then(
 // function(response) {
 // var data = response.data;
-// $scope.animations = data;
-// alert("nb animations ="
-// + $scope.animations.length)
+// $scope.stands = data;
+// alert("nb stands ="
+// + $scope.stands.length)
 // })
 // };
-// $scope.ajouterAnimation = function() {
+// $scope.ajouterStand = function() {
 // // alert("creerClient");
 // $http({
 // method : 'POST',
-// url : 'ajouteranimation.json',
+// url : 'ajouterstand.json',
 // data : {
 // nom : $scope.nom,
 // texte : $scope.texte,
@@ -155,8 +155,8 @@ brest2016App.service('AnimationService', function() {
 // function(response) {
 // // en cas d'ajout OK, on
 // // remet a jour la liste des
-// // animations
-// $scope.listerAnimations();
+// // stands
+// $scope.listerStands();
 // },
 // function(response) {
 // var data = response.data, status = response.status, header = response.header,

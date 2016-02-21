@@ -44,8 +44,8 @@ function factory($resource, $http, growl, SpringDataRestAdapter) {
 	 * retourne le restobject d'un element
 	 * 
 	 * le restobject est le nom qui se trouve dans une url rest
-	 * par exemple, dans http://localhost:8080/brest2016/rest/animations/170
-	 * le restobject est 'animations'  
+	 * par exemple, dans http://localhost:8080/brest2016/rest/stands/170
+	 * le restobject est 'stands'  
 	 * (par convention, les restobject sont toujours au pluriel, avec un 's'
 	 * 
 	 */

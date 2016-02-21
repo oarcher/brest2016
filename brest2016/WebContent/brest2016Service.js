@@ -5,23 +5,23 @@
 (function() {
 	// 'use strict'; // attention, risque de $http undefined ..
 
-	angular.module('brest2016App').service('AnimationService',
+	angular.module('brest2016App').service('StandService',
 			[ '$http', function($http) {
-				var animationService = {};
+				var standService = {};
 
-				animationService.salut = function() {
+				standService.salut = function() {
 					return "salut de service";
 				}
 
-				animationService.listerAnimations = function() {
+				standService.listerStands = function() {
 
 					// ca marche avec promise, mais c'est pas commode
 					var promise = $http({
 						method : 'GET',
-						url : 'listeranimations.json',
+						url : 'listerstands.json',
 					}).then(function(response) {
 						var data = response.data;
-						alert("nb animations =" + data.length);
+						alert("nb stands =" + data.length);
 						return data;
 
 					})
@@ -29,12 +29,12 @@
 					return promise;
 				};
 
-				return animationService;
+				return standService;
 
 			} ]);
 
-	// .service('AnimationService', animationService);
-	// function animationService() {
+	// .service('StandService', standService);
+	// function standService() {
 	//
 	// this.salut = salut;
 	//			

@@ -4,6 +4,11 @@
 package bean;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,8 +16,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
 
@@ -41,9 +48,25 @@ public class Horaire implements Serializable {
 	@NotBlank(message = "ne peux pas être vide")
 	private String plage = "";
 
-	@ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-	@JoinTable(name = "oarcher_animation_horaire", joinColumns = @JoinColumn(name = "idAnimation") , inverseJoinColumns = @JoinColumn(name = "idHoraire") )
-	Animation animation = null;
+	// plusieurs horaires pour chaque stands
+//	@ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+//	@JoinTable(name = "oarcher_stand_horaire", joinColumns = @JoinColumn(name = "idStand") , inverseJoinColumns = @JoinColumn(name = "idHoraire") )
+//	Stand animation = null;
+	
+	// un horaire est partagé par plusieurs activites
+	@OneToMany
+	@JoinTable(name = "oarcher_activite_horaire", joinColumns = @JoinColumn(name = "idActivite") , inverseJoinColumns = @JoinColumn(name = "idHoraire") )
+	private Set<Activite> activite = new HashSet<Activite>();
+	
+	
+	
+	public Set<Activite> getActivite() {
+		return activite;
+	}
+
+	public void setActivite(Set<Activite> activite) {
+		this.activite = activite;
+	}
 
 	public Horaire() {
 	}
@@ -79,12 +102,6 @@ public class Horaire implements Serializable {
 		this.plage = plage;
 	}
 
-	public Animation getAnimation() {
-		return animation;
-	}
 
-	public void setSalle(Animation salle) {
-		this.animation = salle;
-	}
 
 }
