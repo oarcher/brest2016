@@ -73,7 +73,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
 		}
 		System.out.println("handleMethodArgumentNotValid" + errors.toString());
 		ErrorMessage errorMessage = new ErrorMessage(errors);
-		return new ResponseEntity(errorMessage, headers, status);
+		return new ResponseEntity<Object>(errorMessage, headers, status);
 	}
 
 	@Override
@@ -82,7 +82,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
 		String unsupported = "Unsupported content type: " + ex.getContentType();
 		String supported = "Supported content types: " + MediaType.toString(ex.getSupportedMediaTypes());
 		ErrorMessage errorMessage = new ErrorMessage(unsupported, supported);
-		return new ResponseEntity(errorMessage, headers, status);
+		return new ResponseEntity<Object>(errorMessage, headers, status);
 	}
 
 	@Override
@@ -97,13 +97,16 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
 		} else {
 			errorMessage = new ErrorMessage(ex.getMessage());
 		}
-		return new ResponseEntity(errorMessage, headers, status);
+		return new ResponseEntity<Object>(errorMessage, headers, status);
 	}
 
 	@ExceptionHandler(NumberFormatException.class)
-	protected ResponseEntity<String> handleNumberFormatException(NumberFormatException ex) {
+	protected ResponseEntity<ErrorMessage> handleNumberFormatException(NumberFormatException ex) {
 
-		return ResponseEntity.badRequest().body(ex.toString());
+		//return ResponseEntity.badRequest().body(ex.toString());
+		ErrorMessage errorMessage = new ErrorMessage(ex.toString());
+		
+		return new ResponseEntity<ErrorMessage>(errorMessage, HttpStatus.BAD_REQUEST);
 	}
 
 }

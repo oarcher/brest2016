@@ -117,6 +117,14 @@ public class Visiteur implements Serializable{
 		this.prenom = prenom;
 	}
 
+	public Set<Activite> getActivite() {
+		return activite;
+	}
+
+	public void setActivite(Set<Activite> activite) {
+		this.activite = activite;
+	}
+
 	
 	
 	

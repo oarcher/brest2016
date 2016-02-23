@@ -20,17 +20,17 @@ function factory($resource, $http, growl, SpringDataRestAdapter) {
 	var services = {
 			
 		// gestion générique des messages d'erreurs
-		showErrors : showErrors,
+		showMessages : showMessages
 		
 		// retourne le restobject d'un élément  
-		getRestobject : getRestobject
+		//getRestobject : getRestobject
 		
 	};
 
 	return services;
 
-	function showErrors(response) {
-		console.log('showErrors full : ' + response);
+	function showMessages(response) {
+		console.log('showMessages full : ' + response);
 		// callback error sur promise http
 		angular.forEach(response.data.errors, function(error) {
 			growl.addWarnMessage(error);
@@ -49,7 +49,7 @@ function factory($resource, $http, growl, SpringDataRestAdapter) {
 	 * (par convention, les restobject sont toujours au pluriel, avec un 's'
 	 * 
 	 */
-	function getRestobject(element){
+	function getRestobject_xxx(element){  // FIXME a supprimer 
 		var split_url = element._links.self.href.split('/');
 		var restobject = split_url[split_url.length -2];
 		console.log('restobject ' + restobject);

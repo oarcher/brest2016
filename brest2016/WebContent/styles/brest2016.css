@@ -9,7 +9,7 @@
     z-index: 9999;
 }
 .growl-item.ng-enter {
-    -webkit-animation: bounceIn 0.5s;
-    animation: bounceIn 0.5s;
+    -webkit-animation: bounceIn 0.2s;
+    animation: bounceIn 0.1s;
 }
 
