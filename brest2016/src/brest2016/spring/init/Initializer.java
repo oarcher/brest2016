@@ -15,15 +15,18 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.ServletRegistration.Dynamic;
 
+import org.apache.log4j.Logger;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
 public class Initializer implements WebApplicationInitializer {
 
+	final Logger log = Logger.getLogger(this.getClass());
+	
 	@Override
 	public void onStartup(ServletContext servletContext) throws ServletException {
-
+		log.info("Initialisation Spring");
 		System.out.println("Initialisation Spring");
 		
 

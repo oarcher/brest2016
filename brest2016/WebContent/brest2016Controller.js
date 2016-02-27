@@ -14,7 +14,7 @@ angular.module('brest2016App').controller('Brest2016Controller', brest2016Contro
  * @param growl
  * @param Stand
  */
-function brest2016Controller(growl, Brest2016Factory, Hateoas) {
+function brest2016Controller( Brest2016Factory, Hateoas) {
 	// on préfère l'utilisation de 'this' a $scope
 
 	/**
@@ -35,6 +35,7 @@ function brest2016Controller(growl, Brest2016Factory, Hateoas) {
 	 * facon d'une interface.
 	 */
 
+	vm.validate = validate
 	// vm.query = query;
 	// vm.create = create;
 	// vm.remove = remove;
@@ -69,6 +70,9 @@ function brest2016Controller(growl, Brest2016Factory, Hateoas) {
 	
 	//vm.hateoas['xxxx'] = new Hateoas('visiteurs/1/stand');
 	
+	function validate(form){
+		console.log("validate " + JSON.stringify(form.$valid));
+	}
 	
 	
 }

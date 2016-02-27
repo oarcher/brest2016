@@ -21,18 +21,23 @@
 	// une specialisation de $ressource pour
 	// interroger un
 	// serveur spring-data-rest
-	'ui.bootstrap',
-
-	// elements de menus + css facon twitter
 	'spring-data-rest',
 
-	// growl messages popup
-	, 'angular-growl', 'ngSanitize' ])
+	// angular material
+	'ngMaterial',
+	
+	'angular-growl'])
+	
+	.config(['growlProvider','$httpProvider', function(growlProvider,$httpProvider) {
+		  growlProvider.onlyUniqueMessages(false);
+		  growlProvider.globalReversedOrder(true);
+		  growlProvider.globalDisableCloseButton(true);
+		  growlProvider.globalTimeToLive(5000);
+		  growlProvider.globalDisableCountDown(true);
+		  $httpProvider.interceptors.push(growlProvider.serverMessagesInterceptor);
+	}])
 
-	.config(function(growlProvider) {
-		growlProvider.globalTimeToLive(9000);
-		growlProvider.globalEnableHtml(true);
-	})
+	
 
 
 })();

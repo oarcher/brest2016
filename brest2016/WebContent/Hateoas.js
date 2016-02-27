@@ -4,7 +4,7 @@
 
 (function() {
 	'use strict';
-	angular.module('brest2016App').factory('Hateoas', function($resource, growl, SpringDataRestAdapter, Brest2016Factory) {
+	angular.module('brest2016App').factory('Hateoas', function($resource, SpringDataRestAdapter, Brest2016Factory) {
 
 		console.log('Factory hateoas init');
 
@@ -13,9 +13,9 @@
 		/**
 		 * Constructeur
 		 */
-		function Hateoas(restobject) {
-			console.log('constructeur Hateoas pour ' + restobject);
-			this.restobject = restobject;
+		function Hateoas(restObject) {
+			console.log('constructeur Hateoas pour ' + restObject);
+			this.restObject = restObject;
 			// list est la liste des objets retournée par query()
 			// toute mmodification de cette liste entraine la modification
 			// dans le scope de la fonction appelante.
@@ -33,8 +33,9 @@
 		Hateoas.prototype = {
 			query : query,
 			remove : remove,
-			create : create,
-			getterSetter : getterSetter,
+			create_old : create_old,
+			create: create,
+			getterSetter_old : getterSetter_old,
 			profile : profile,
 			getRelations : getRelations,
 			addRelation : addRelation,
@@ -48,7 +49,7 @@
 		 */
 		function query() {
 			var self = this;
-			var query_url = apiurl + self.restobject;
+			var query_url = apiurl + self.restObject;
 			console.log('query url ' + query_url);
 			// lst contiendra les resultat a la resolution de la promise
 			var lst = [];
@@ -64,11 +65,8 @@
 						// console.log('query : ' + JSON.stringify(element));
 						lst.push(element);
 					});
-					growl.addSuccessMessage(lst.length + ' ' + self.restobject + ' récupéré(s) du serveur');
+					Brest2016Factory.showMessage(lst.length + ' ' + self.restObject + ' récupéré(s) du serveur');
 				});
-			}, function(errors) {
-				Brest2016Factory.showMessages(errors);
-				console.log(errors)
 			});
 			self.list = lst;
 			return self.list;
@@ -82,13 +80,13 @@
 		 * create : creation de l'element qui se trouve dans this.scope.acreer
 		 */
 
-		function create(nom) {
+		function create_old(nom) {
 			var self = this;
-			console.log('create ' + nom + ' dans ' + self.restobject);
+			console.log('create ' + nom + ' dans ' + self.restObject);
 			var element = self.scope[nom];
 			console.log('create getter: ' + JSON.stringify(element));
-			var url = apiurl + self.restobject;
-			// console.log('create ' + self.restobject + ":" +
+			var url = apiurl + self.restObject;
+			// console.log('create ' + self.restObject + ":" +
 			// JSON.stringify(self.scope.acreer));
 			$resource(url).save(element, function(created) {
 				console.log('callback create ok : ' + JSON.stringify(created));
@@ -96,26 +94,57 @@
 				getterSetter(nom, self)({}); // on passe self au
 				// getterSetter, car la promise
 				// redefini this
-				growl.addSuccessMessage(self.restobject + ' créé!');
+				Brest2016Factory.showMessage(self.restObject + ' créé!');
 				return created;
-			}, function(error) {
-				Brest2016Factory.showMessages(error);
-				console.log(error);
 			});
+
+		}
+		
+		/**
+		 * element = create(element)
+		 * creation d'un element dans le restObject.
+		 * une copie de l'element est retournée, et cette copie est vidée en cas de succes
+		 * (pour permettre un reset des champs du formulaire)
+		 * 
+		 */
+		function create(element) {
+			var self = this;
+			console.log('create ' + JSON.stringify(element) + ' dans ' + self.restObject);
+			var url = apiurl + self.restObject;
+			
+			for (var field in element) {
+		        if (element.hasOwnProperty(field)) {
+		        	console.log("valid : " + element.$valid);
+		        }
+		    }
+			
+			var copy_element = angular.copy(element);
+			$resource(url).save(element, function(created) {
+				console.log('callback create ok : ' + JSON.stringify(created));
+				self.list.push(created);
+				// on vide les champs de l'élément reourné.
+				for (var field in copy_element) {
+			        if (copy_element.hasOwnProperty(field)) {
+			        	copy_element[field] = "";
+			        }
+			    }
+				Brest2016Factory.showMessage(self.restObject + ' créé!');
+			});
+			return copy_element;
 
 		}
 
 		/**
 		 * getterSetter : retourne un getterSetter generique sur un nom de
 		 * variable nom peut comporter des '.' comme nom.subnom . dans ce cas,
-		 * nom sera un objet ayant la propriété subnom le context (self) peut
+		 * nom sera un objet ayant la propriété subnom. le context (self) peut
 		 * etre passé de facon optionnel en parametre, dans le cas ou
 		 * getterSetter est appelé dans une promise qui a redefini le contexte.
 		 */
 
-		function getterSetter(nom, context) {
+		function getterSetter_old(nom, context) {
 			var self = context || this;
-			// console.log('getterSetter dans ' + self.restobject + ' pour ' +
+			// console.log('getterSetter dans ' + self.restObject + ' pour ' +
 			// nom);
 			return function(setter) {
 				if (angular.isDefined(setter)) {
@@ -151,7 +180,7 @@
 
 				console.log(' retrait index ' + index);
 				self.list.splice(index, 1);
-				growl.addSuccessMessage(self.restobject + ' supprimé!');
+				Brest2016Factory.showMessage(self.restObject + ' supprimé!');
 				return removed;
 			}, function(errors) {
 				showMessages(errors);
@@ -160,9 +189,9 @@
 		}
 
 		/**
-		 * profile : retourne le profile d'un restobject, ou la liste des
-		 * restobject si restobject est vide. C'est en fait un simple get, avec
-		 * le nom du restobject precédé de 'profile' dans l'url
+		 * profile : retourne le profile d'un restObject, ou la liste des
+		 * restObject si restObject est vide. C'est en fait un simple get, avec
+		 * le nom du restObject precédé de 'profile' dans l'url
 		 */
 		function profile() {
 			var self = this;
@@ -178,15 +207,15 @@
 				// ?
 				// console.log('profile unprocessed response : ' +
 				// JSON.stringify(response));
-				if (self.restobject) {
-					console.log('profile restobject : ' + self.restobject);
+				if (self.restObject) {
+					console.log('profile restObject : ' + self.restObject);
 					lst.push(response.alps.descriptors);
 				} else {
-					angular.forEach(response._links, (function(linkName, restobject) {
+					angular.forEach(response._links, (function(linkName, restObject) {
 						// console.log('xxx ' + JSON.stringify(linkName) + ' : '
-						// + restobject);
-						if (restobject != "self") {
-							lst.push(restobject);
+						// + restObject);
+						if (restObject != "self") {
+							lst.push(restObject);
 						}
 					}));
 				}
@@ -374,7 +403,7 @@
 		 *            l'element a ajouter en relation
 		 *             le but est de poster l'url de
 		 *            l'element detination sur l'url de l'element source suffixé
-		 *            par le nom du restobject par exemple, avec curl : curl -i
+		 *            par le nom du restObject par exemple, avec curl : curl -i
 		 *            -X POST -H 'Content-type: text/uri-list' -d
 		 *            'http://localhost:8080/brest2016/rest/activite/2'
 		 *            http://localhost:8080/brest2016/rest/visiteurs/1/activite
@@ -385,11 +414,11 @@
 			// console.log("element :" + JSON.stringify(element));
 			// console.log("otherElement :" + JSON.stringify(otherElement));
 			var hrefOtherElement = getSelfHref(otherElement);
-			var otherRestobject = getRestobjectFromHref(hrefOtherElement);
-			var hrefRelation = getRelationHref(element, otherRestobject);
-			var restobject = getRestobject(element);
+			var otherRestObject = getRestObjectFromHref(hrefOtherElement);
+			var hrefRelation = getRelationHref(element, otherRestObject);
+			var restObject = getRestObject(element);
 			// console.log("hrefRelation : " + hrefRelation);
-			var message = "entre " + restobject + " et " + otherRestobject;
+			var message = "entre " + restObject + " et " + otherRestObject;
 			$resource(hrefRelation, {}, {
 				post : {
 					method : "POST",
@@ -399,34 +428,34 @@
 					}
 				}
 			}).post(hrefOtherElement, function(success) {
-				growl.addSuccessMessage("Relation créée " + message);
+				Brest2016Factory.showMessage("Relation créée " + message);
 			}, function(error) {
-				growl.addErrorMessage("Erreur à la création de la relation " + message + " : " + error);
+				Brest2016Factory.showMessage("Erreur à la création de la relation " + message + " : " + error);
 			});
 		}
 
 		/**
 		 * removeRelation element : l'element auquel il faut supprimer une
 		 * relation otherElement : l'element a supprimer le but est de recupere
-		 * l'url href de l'element, et d'y concatener le nom du restobject et
+		 * l'url href de l'element, et d'y concatener le nom du restObject et
 		 * l'id de otherElement, pour ensuite appeller la methode
 		 * $resource.remove
 		 */
 		function removeRelation(element, otherElement) {
 			// console.log("removeRelation");
 			var hrefOtherElement = getSelfHref(otherElement);
-			var otherRestobject = getRestobjectFromHref(hrefOtherElement);
+			var otherRestObject = getRestObjectFromHref(hrefOtherElement);
 			var idOtherElement = getIdFromHref(hrefOtherElement);
-			var hrefRemove = getRelationHref(element, otherRestobject) + "/" + idOtherElement;
+			var hrefRemove = getRelationHref(element, otherRestObject) + "/" + idOtherElement;
 			// console.log('hrefRemove : ' + hrefRemove);
-			var restobject = getRestobject(element);
+			var restObject = getRestObject(element);
 			var debug = "removeRelation : " + getSelfHref(element) + " " + hrefOtherElement + " par " + hrefRemove;
-			var message = "entre " + restobject + " et " + otherRestobject;
+			var message = "entre " + restObject + " et " + otherRestObject;
 			$resource(hrefRemove, {}).remove(function(removed) {
 				console.log('OK :' + debug);
-				growl.addSuccessMessage("Relation defaite " + message);
+				Brest2016Factory.showMessage("Relation defaite " + message);
 			}, function(error) {
-				growl.addErrorMessage("Erreur a la suppression de la relation " + message + " : " + error);
+				Brest2016Factory.showMessage("Erreur a la suppression de la relation " + message + " : " + error);
 				console.log('NOK :' + debug);
 			});
 
@@ -450,17 +479,17 @@
 
 		/**
 		 * getterSetterRelation retourne un getterSetter pour ajouter ou retirer
-		 * une relation entre element et otherElement utilisabe par ng-model si
+		 * une relation entre element et otherElement. Utilisabe par ng-model si
 		 * ng-model-options={getterSetter: true}
 		 */
 		function getterSetterRelation(element, otherElement) {
 			var self = this;
-			// console.log('getterSetterRelation dans ' + self.restobject);
+			// console.log('getterSetterRelation dans ' + self.restObject);
 			var hrefElement = getSelfHref(element);
 			var hrefOtherElement = getSelfHref(otherElement);
-			var otherRestobject = getRestobjectFromHref(hrefOtherElement);
+			var otherRestObject = getRestObjectFromHref(hrefOtherElement);
 			var idOtherElement = getIdFromHref(hrefOtherElement);
-			var hrefExist = getRelationHref(element, otherRestobject) + "/" + idOtherElement;
+			var hrefExist = getRelationHref(element, otherRestObject) + "/" + idOtherElement;
 
 			var getterSetter = function() {
 			};
@@ -515,7 +544,7 @@
 
 		function dumpScope() {
 			var self = this;
-			console.log('dumpScope ' + self.restobject + ' : ' + JSON.stringify(self.scope));
+			console.log('dumpScope ' + self.restObject + ' : ' + JSON.stringify(self.scope));
 		}
 
 		/**
@@ -523,10 +552,10 @@
 		 */
 
 		/**
-		 * getRestobjectFromUrl retourne le rest object principal d'une url.
+		 * getRestObjectFromUrl retourne le rest object principal d'une url.
 		 * C'est le mot au singulier juste apres /rest/
 		 */
-		function getRestobjectFromHref(href) {
+		function getRestObjectFromHref(href) {
 			return href.match(/.*\/rest\/(.*)s\/.*/)[1];
 		}
 
@@ -547,10 +576,10 @@
 		}
 
 		/**
-		 * getRestobject retourne le restobject d'un élément
+		 * getRestObject retourne le restObject d'un élément
 		 */
-		function getRestobject(element) {
-			return getRestobjectFromHref(getSelfHref(element));
+		function getRestObject(element) {
+			return getRestObjectFromHref(getSelfHref(element));
 		}
 
 		/**

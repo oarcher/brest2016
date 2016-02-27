@@ -15,13 +15,13 @@
 
 angular.module('brest2016App').factory('Brest2016Factory', factory);
 
-function factory($resource, $http, growl, SpringDataRestAdapter) {
+function factory($mdToast,growl) {
 	console.log('Factory init');
 	var services = {
 			
 		// gestion générique des messages d'erreurs
-		showMessages : showMessages
-		
+		showMessages : showMessages,
+		showMessage  : showMessage		
 		// retourne le restobject d'un élément  
 		//getRestobject : getRestobject
 		
@@ -33,29 +33,22 @@ function factory($resource, $http, growl, SpringDataRestAdapter) {
 		console.log('showMessages full : ' + response);
 		// callback error sur promise http
 		angular.forEach(response.data.errors, function(error) {
-			growl.addWarnMessage(error);
+			//growl.addWarnMessage(error);
+			showMessage(error)
 			console.log(error);
 		});
-
 	}
 
-	/**
-	 * getRestobject
-	 * retourne le restobject d'un element
-	 * 
-	 * le restobject est le nom qui se trouve dans une url rest
-	 * par exemple, dans http://localhost:8080/brest2016/rest/stands/170
-	 * le restobject est 'stands'  
-	 * (par convention, les restobject sont toujours au pluriel, avec un 's'
-	 * 
-	 */
-	function getRestobject_xxx(element){  // FIXME a supprimer 
-		var split_url = element._links.self.href.split('/');
-		var restobject = split_url[split_url.length -2];
-		console.log('restobject ' + restobject);
-		return restobject;
+	function showMessage(message){
+		console.log(message);
+//		$mdToast.show(
+//			      $mdToast.simple()
+//			        .textContent(message)
+//			        .position("bottom right")
+//			        .hideDelay(3000)
+//			    );
+		growl.info(message, {ttl: 10000}) ;
 	}
-	
 
 }
 

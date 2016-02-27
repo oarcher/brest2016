@@ -23,7 +23,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import javax.validation.*;
 
-import brest2016.spring.controller.ErrorMessage;
+import brest2016.spring.controller.ServerMessages;
 
 /**
  * @author oarcher
@@ -41,72 +41,78 @@ import brest2016.spring.controller.ErrorMessage;
 @ControllerAdvice
 public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
 	public ControllerExceptionHandler() {
-		System.out.println("ControllerExceptionHandler: Initialisation des gestionnaires d'erreur");
+		System.out.println("ControllerExceptionHandler: Initialisation des gestionnaires d'erreurs");
 	}
 
 	@ExceptionHandler(ConstraintViolationException.class)
-	protected ResponseEntity<ErrorMessage> handleConstraintViolationException(ConstraintViolationException ex) {
-		List<String> errors = new ArrayList<String>();
+	protected ResponseEntity<ServerMessages> handleConstraintViolationException(ConstraintViolationException ex) {
+		ServerMessages serverMessages = new ServerMessages();
+		//List<String> errors = new ArrayList<String>();
 		for(ConstraintViolation<?> violation : ex.getConstraintViolations()) {
 			String error= "Valeur '" +violation.getInvalidValue() +"' de "  + violation.getRootBeanClass().getSimpleName() + "."  +  violation.getPropertyPath() + " ne respecte pas la contrainte '" + violation.getMessage() + "'";
-			errors.add(error);
+			serverMessages.add(new ServerMessage(error,"warning"));
             System.out.println(error);
         }
-		ErrorMessage errorMessage = new ErrorMessage(errors);
-		return new ResponseEntity<ErrorMessage>(errorMessage, HttpStatus.BAD_REQUEST);
+		return new ResponseEntity<ServerMessages>(serverMessages, HttpStatus.BAD_REQUEST);
 	}
 
 	@Override
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
 			HttpHeaders headers, HttpStatus status, WebRequest request) {
+		ServerMessages serverMessages = new ServerMessages();
 		List<FieldError> fieldErrors = ex.getBindingResult().getFieldErrors();
 		List<ObjectError> globalErrors = ex.getBindingResult().getGlobalErrors();
 		List<String> errors = new ArrayList<>(fieldErrors.size() + globalErrors.size());
 		String error;
 		for (FieldError fieldError : fieldErrors) {
 			error = fieldError.getField() + ": " + fieldError.getDefaultMessage();
-			errors.add(error);
+			serverMessages.add(new ServerMessage(error,"warning"));
 		}
 		for (ObjectError objectError : globalErrors) {
 			error = objectError.getObjectName() + ": " + objectError.getDefaultMessage();
-			errors.add(error);
+			serverMessages.add(new ServerMessage(error,"warning"));
 		}
 		System.out.println("handleMethodArgumentNotValid" + errors.toString());
-		ErrorMessage errorMessage = new ErrorMessage(errors);
-		return new ResponseEntity<Object>(errorMessage, headers, status);
+		return new ResponseEntity<Object>(serverMessages, headers, status);
 	}
 
 	@Override
 	protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex,
 			HttpHeaders headers, HttpStatus status, WebRequest request) {
+		ServerMessages serverMessages = new ServerMessages();
 		String unsupported = "Unsupported content type: " + ex.getContentType();
 		String supported = "Supported content types: " + MediaType.toString(ex.getSupportedMediaTypes());
-		ErrorMessage errorMessage = new ErrorMessage(unsupported, supported);
-		return new ResponseEntity<Object>(errorMessage, headers, status);
+		serverMessages.add(new ServerMessage(unsupported + "\n" +  supported , "error"));
+		return new ResponseEntity<Object>(serverMessages, headers, status);
 	}
 
 	@Override
 	protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
 			HttpHeaders headers, HttpStatus status, WebRequest request) {
 		Throwable mostSpecificCause = ex.getMostSpecificCause();
-		ErrorMessage errorMessage;
+		ServerMessages serverMessages = new ServerMessages();
 		if (mostSpecificCause != null) {
 			String exceptionName = mostSpecificCause.getClass().getName();
 			String message = mostSpecificCause.getMessage();
-			errorMessage = new ErrorMessage(exceptionName, message);
+			serverMessages.add(new ServerMessage(exceptionName + " : " + message,"error"));
 		} else {
-			errorMessage = new ErrorMessage(ex.getMessage());
+			serverMessages.add(new ServerMessage(ex.getMessage(),"error"));
 		}
-		return new ResponseEntity<Object>(errorMessage, headers, status);
+		return new ResponseEntity<Object>(serverMessages, headers, status);
 	}
 
 	@ExceptionHandler(NumberFormatException.class)
-	protected ResponseEntity<ErrorMessage> handleNumberFormatException(NumberFormatException ex) {
-
+	protected ResponseEntity<ServerMessages> handleNumberFormatException(NumberFormatException ex) {
+		ServerMessages serverMessages = new ServerMessages();
 		//return ResponseEntity.badRequest().body(ex.toString());
-		ErrorMessage errorMessage = new ErrorMessage(ex.toString());
+		serverMessages.add(new ServerMessage(ex.toString(), "warning"));
 		
-		return new ResponseEntity<ErrorMessage>(errorMessage, HttpStatus.BAD_REQUEST);
+		return new ResponseEntity<ServerMessages>(serverMessages, HttpStatus.BAD_REQUEST);
+	}
+	
+	@ExceptionHandler(Exception.class)
+	protected void genericExceptionHandler(Exception exception){
+		System.out.println("Exception generique" + exception.getClass().getName());
 	}
 
 }
