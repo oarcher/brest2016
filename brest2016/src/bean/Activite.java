@@ -4,6 +4,7 @@
 package bean;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,17 +37,12 @@ public class Activite implements Serializable {
 	@Column
 	private Long id;
 	
+	private String nom;
 	
-	// il y a un stand par activité, mais une stand est dans plusieurs activités
-	@ManyToOne
-	@JoinColumn(name = "idStand")
-	//@JoinTable(name = "oarcher_activite_stand", joinColumns = @JoinColumn(name = "idActivite") , inverseJoinColumns = @JoinColumn(name = "idStand") )
-	private Stand stand;
+	private String lieu;
 	
-	@ManyToOne
-	//@JoinTable(name = "oarcher_activite_horaire", joinColumns = @JoinColumn(name = "idActivite") , inverseJoinColumns = @JoinColumn(name = "idHoraire") )
-	@JoinColumn(name = "idHoraire")
-	private Horaire horaire;
+	private Date datedebut;
+	private Date datefin;
 	
 	@ManyToMany(mappedBy="activite")
 	//@JoinTable(name = "oarcher_visiteur_activite", joinColumns = @JoinColumn(name = "idActivite") , inverseJoinColumns = @JoinColumn(name = "idVisiteur") )
@@ -60,21 +56,38 @@ public class Activite implements Serializable {
 		this.id = id;
 	}
 
-	public Stand getStand() {
-		return stand;
+
+	public String getNom() {
+		return nom;
 	}
+
+	public void setNom(String nom) {
+		this.nom = nom;
+	}
+
+	public String getLieu() {
+		return lieu;
+	}
+
+	public void setLieu(String lieu) {
+		this.lieu = lieu;
+	}
+
 	
-
-	public void setStand(Stand stand) {
-		this.stand = stand;
+	public Date getDatedebut() {
+		return datedebut;
 	}
 
-	public Horaire getHoraire() {
-		return horaire;
+	public void setDatedebut(Date datedebut) {
+		this.datedebut = datedebut;
 	}
 
-	public void setHoraire(Horaire horaire) {
-		this.horaire = horaire;
+	public Date getDatefin() {
+		return datefin;
+	}
+
+	public void setDatefin(Date datefin) {
+		this.datefin = datefin;
 	}
 
 	public Set<Visiteur> getVisiteur() {

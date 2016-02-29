@@ -14,7 +14,7 @@ angular.module('brest2016App').controller('Brest2016Controller', brest2016Contro
  * @param growl
  * @param Stand
  */
-function brest2016Controller( Brest2016Factory, Hateoas) {
+function brest2016Controller(Brest2016Factory, Hateoas, brest2016Calendar) {
 	// on préfère l'utilisation de 'this' a $scope
 
 	/**
@@ -35,44 +35,32 @@ function brest2016Controller( Brest2016Factory, Hateoas) {
 	 * facon d'une interface.
 	 */
 
-	vm.validate = validate
-	// vm.query = query;
-	// vm.create = create;
-	// vm.remove = remove;
-	// vm.profile = profile;
-	// vm.read = read;
-	// vm.stands = []; // contiendra les stands
-	/** l'objet stand (JSON) */
-//	vm.stand = {
-//		nom : "",
-//		descr : ""
-//	};
-
+	
+	
 	/**
 	 * Action a faire a l'initialisation du controller FIXME : Que faire si
 	 * plusieurs <form> utilise ce controller ?
 	 */
 
+	vm.calendar = new brest2016Calendar("brest2016calendar");
+	
+	vm.testdrag= {title : "test"};
+	
+	
+	//var tmp= uiCalendarConfig
 	// on demande au serveur rest hateoas la liste des objets qu'il gere
 	// var hateoas_root = new Hateoas('');
 	// var restobjects_list = hateoas_root.profile() // FIXME promise ....
-
-
 	// pour chaque objet, on créé une instance hateoas, visible dans vm
-	var restobjects_list = [ "stands", "horaires", "visiteurs" ];
+	var restobjects_list = [ "activites", "visiteurs" ];
 	vm.hateoas = {};
 	restobjects_list.forEach(function(restobject) {
 		vm.hateoas[restobject] = new Hateoas(restobject);
 		console.log('visible dans le scope : vm.hateoas.' + restobject);
 
 	});
+	
+//	vm.hateoas.activites.list.forEach(function(activite){vm.calendar.addActivite(activite)});
 
-	
-	//vm.hateoas['xxxx'] = new Hateoas('visiteurs/1/stand');
-	
-	function validate(form){
-		console.log("validate " + JSON.stringify(form.$valid));
-	}
-	
-	
+
 }

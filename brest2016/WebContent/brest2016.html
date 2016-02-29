@@ -1,242 +1,131 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html ng-app="brest2016App">
-    <head>
-        <meta
-            http-equiv="Content-Type"
-            content="text/html; charset=UTF-8"
-            >
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
-        <title>Reservation de créneaux pour Brest 2016</title>
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="styles/angular-growl.css"
-            >
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="styles/animate.css"
-            >
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="styles/bootstrap.css"
-            >
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="styles/brest2016.css"
-            >
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="styles/angular-material.css"
-            >
-        <script
-            type="text/javascript"
-            src="angular.js"
-        ></script>
-        <script
-            type="text/javascript"
-            src="angular-animate.js"
-        ></script>
-        <script
-            type="text/javascript"
-            src="angular-aria.js"
-        ></script>
-        <script
-            type="text/javascript"
-            src="angular-messages.js"
-        ></script>
-        <script
-            type="text/javascript"
-            src="angular-material.js"
-        ></script>
-        <!-- <script -->
-        <!-- 	type="text/javascript" -->
-        <!-- 	src="ui-bootstrap-tpls-1.1.2.js" -->
-        <!-- ></script> -->
-        <script
-            type="text/javascript"
-            src="angular-resource.js"
-        ></script>
-        <script
-            type="text/javascript"
-            src="angular-spring-data-rest.js"
-        ></script>
-        <script
-            type="text/javascript"
-            src="angular-growl.js"
-        ></script>
-        <script
-            type="text/javascript"
-            src="angular-sanitize.js"
-        ></script>
-        <script
-            type="text/javascript"
-            src="brest2016Module.js"
-        ></script>
-        <script
-            type="text/javascript"
-            src="brest2016Factory.js"
-        ></script>
-        <script
-            type="text/javascript"
-            src="Hateoas.js"
-        ></script>
-        <script
-            type="text/javascript"
-            src="brest2016Controller.js"
-        ></script>
-        <!-- ne sert plus !! -->
-        <!-- <script -->
-        <!-- 	type="text/javascript" -->
-        <!-- 	src="autovivify.js" -->
-        <!-- ></script> -->
+<title>Reservation de créneaux pour Brest 2016</title>
+<link rel="stylesheet" type="text/css" href="styles/angular-growl.css">
+<link rel="stylesheet" type="text/css" href="styles/animate.css">
+<link rel="stylesheet" type="text/css" href="styles/bootstrap.css">
+<link rel="stylesheet" type="text/css" href="styles/animate.css">
+<link rel="stylesheet" type="text/css" href="styles/fullcalendar.css">
+<link rel="stylesheet" type="text/css" href="styles/brest2016.css">
 
-    </head>
-
-
-    <body
-        ng-controller="Brest2016Controller as vm"
-        layout="column"
-        >
-
-    <md-toolbar layout="row">
-        <h1>Angular Material - Starter App</h1>
-    </md-toolbar>
-    <div
-        flex
-        layout="row"
-        >
-
-
-        <!-- Container #3 -->
-        <md-sidenav
-            md-is-locked-open="true"
-            class="md-whiteframe-z2"
-            > 
-            <md-list> 
-                <md-list-item>
-                    <md-button ng-init="vm.ajouterStand = false" ng-click="vm.ajouterStand = !vm.ajouterStand">Ajouter un stand</md-button>
-                </md-list-item>
-                <md-list-item ng-repeat="stand in vm.hateoas.stands.list"> 
-                    <md-button ng-init="stand.show=false"
-                        ng-click="stand.show=!stand.show"
-                        ng-class="{'selected' : stand.show }"
-                        > {{stand.nom}}
-                    </md-button>
-                </md-list-item>                
-            </md-list> 
-        </md-sidenav>
-
-        <md-content
-            flex
-            id="content"
-            >
-            <div growl></div>
-            <h2>Content</h2>
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/jquery-ui.js"></script>
+<script type="text/javascript" src="js/moment.js"></script>
+<script type="text/javascript" src="js/angular.js"></script>
+<script type="text/javascript" src="js/calendar.js"></script>
+<script type="text/javascript" src="js/fullcalendar.js"></script>
+<script type="text/javascript" src="js/gcal.js"></script>
+<script type="text/javascript" src="js/ui-bootstrap-tpls-1.1.2.js"></script>
+<script type="text/javascript" src="js/angular-resource.js"></script>
+<script type="text/javascript" src="js/angular-spring-data-rest.js"></script>
+<script type="text/javascript" src="js/angular-growl.js"></script>
+<script type="text/javascript" src="js/angular-sanitize.js"></script>
+<script type="text/javascript" src="js/angular-messages.js"></script>
+<script type="text/javascript" src="js/angular-dragdrop.js"></script>
+<script type="text/javascript" src="brest2016Module.js"></script>
+<script type="text/javascript" src="brest2016Factory.js"></script>
+<script type="text/javascript" src="Hateoas.js"></script>
+<script type="text/javascript" src="brest2016Calendar.js"></script>
+<script type="text/javascript" src="brest2016Controller.js"></script>
 
 
 
-            <div ng-show="vm.ajouterStand">
-                <form
-                    class="form-horizontal"
-                    role="form"
-                    name="create_stand_form"
-                    ng-submit="stand_a_creer = vm.hateoas.stands.create(stand_a_creer)"
-                    novalidate
-                    >
-                    <label class="control-label">Stand</label> <input
-                        type="text"
-                        name="nom_stand"
-                        ng-model="stand_a_creer.nom"
-                        ng-minlength="2"
-                        /> <input
-                        type="text"
-                        name="descr_stand"
-                        ng-model="stand_a_creer.descr"
-                        />
-
-                    <button
-                        class="btn btn-primary"
-                        ng-disabled="create_stand_form.$invalid"
-                        >Add</button>
-                </form>
-            </div>
-
-            <div ng-show="vm.hateoas.stands.list.length">
-                liste des stands
-                <div ng-repeat="stand in vm.hateoas.stands.list">
-                    <div ng-show="stand.show">
-                        <li>show: {{stand.show}} nom: {{stand.nom}} descr: {{stand.descr}} <span
-                                remove-on-click
-                                ng-click="vm.hateoas.stands.remove(stand)"
-                                > supprimer </span> <span ng-repeat="horaire in vm.hateoas.horaires.list">
-                                <label>{{horaire.plage}} <input
-                                        type="checkbox"
-                                        ng-model-options="{getterSetter: true}"
-                                        ng-model="vm.hateoas.stands.getterSetterRelation(stand, horaire)"
-                                        />
-                                </label>
-                            </span>
-                        </li>
-                    </div>
-                </div>
-            </div>
-
-            <form
-                class="form-horizontal"
-                role="form"
-                ng-submit="vm.hateoas.visiteurs.create('visiteur_a_creer')"
-                ng-model-options="{getterSetter: true, updateOn: 'blur'}"
-                >
-                <label class="control-label">Visiteur</label> <input
-                    type="text"
-                    ng-model="vm.hateoas.visiteurs.getterSetter('visiteur_a_creer.prenom')"
-                    /> <input
-                    type="text"
-                    ng-model="vm.hateoas.visiteurs.getterSetter('visiteur_a_creer.nom')"
-                    />
-                <button class="btn btn-primary">Add</button>
-            </form>
+</head>
 
 
+<body ng-controller="Brest2016Controller as vm">
+	<div data-growl=""></div>
+	<div class="collapse navbar-collapse">
+		<ul class="nav navbar-nav">
+			<li ng-class="{ active: true}"><a href="#">Acceuil</a></li>
+			<li ng-class="{ active: false}"><a href="#">Admin</a></li>
+		</ul>
+	</div>
 
-            <div ng-show="vm.hateoas.visiteurs.list.length">
-                liste des visiteurs
-                <div ng-repeat="visiteur in vm.hateoas.visiteurs.list">
-                    <li>{{visiteur.prenom}} {{visiteur.nom}} <span
-                            remove-on-click
-                            ng-click="vm.hateoas.visiteurs.remove(visiteur)"
-                            > supprimer </span> <span
-                            ng_click="activites = vm.hateoas.visiteurs.getRelations(visiteur, 'activite')"
-                            >activite</span>
-                        <div ng-repeat="activite in activites">{{activite}}</div>
-                    </li>
-                </div>
-            </div>
+
+    <span data-event="{{vm.testdrag}}" data-drag="true" data-jqyoui-options="{revert: true}" jqyoui-draggable placeholder="false" >So you think you can drag</span>
+    
+    
+	<div class="calendar" ui-calendar="vm.calendar.config.calendar"
+		ng-model="vm.calendar.eventSources" calendar="{{vm.calendar.name}}"></div>
+
+
+	<div ng-show="vm.hateoas.activites.list.length">
+		liste des stands
+		<div ng-repeat="activite in vm.hateoas.activites.list">
+			<li>nom: {{activite.nom}} lieu: {{activite.lieu}} <span
+					 ng-click="vm.calendar.addActivite(activite)">
+					vers agenda </span> 
+			</li>
+		</div>
+	</div>
+
+	<div>
+		<form class="form-horizontal" role="form" name="create_activite_form"
+			ng-submit="activite_a_creer = vm.hateoas.activites.create(activite_a_creer)">
+			<label class="control-label">Activite</label> nom :<input type="text"
+				ng-model="activite_a_creer.nom" minlength="2" maxlength="15" />
+			<div ng-messages="create_activite_form.nom.$error"
+				ng-if='create_activite_form.nom.$dirty'>
+				<div ng-message="minlength">au moins 2 caractères</div>
+				<div ng-message="maxlength">au plus 15 caractères</div>
+			</div>
+			lieu : <input type="text" ng-model="activite_a_creer.lieu" /> debut
+			: <input type="text" ng-model="activite_a_creer.datedebut" /> fin :<input
+				type="text" ng-model="activite_a_creer.datefin" />
+			<button class="btn btn-primary">Add</button>
+		</form>
+
+		<div ng-show="vm.hateoas.activites.list.length">
+			liste des stands
+			<div ng-repeat="activite in vm.hateoas.activites.list">
+				<li>nom: {{activite.nom}} lieu: {{activite.lieu}} <span
+						remove-on-click ng-click="vm.hateoas.activites.remove(activite)">
+						supprimer </span> <!-- 						<span ng-repeat="horaire in vm.hateoas.horaires.list"> -->
+					<!-- 						<label>{{horaire.plage}} <input type="checkbox" --> <!-- 							ng-model-options="{getterSetter: true}" -->
+					<!-- 							ng-model="vm.hateoas.stands.getterSetterRelation(stand, horaire)" /> -->
+					<!-- 						</label> --> <!-- 					</span> -->
+				</li>
+			</div>
+		</div>
+
+		<form class="form-horizontal" role="form"
+			ng-submit="visiteur_a_creer = vm.hateoas.visiteurs.create(visiteur_a_creer)">
+			<label class="control-label">Visiteur</label> <input type="text"
+				ng-model="visiteur_a_creer.prenom" /> <input type="text"
+				ng-model="visiteur_a_creer.nom" /> <input type="text"
+				ng-model="visiteur_a_creer.password" />
+			<button class="btn btn-primary">Add</button>
+		</form>
 
 
 
-            <form
-                class="form-horizontal"
-                role="form"
-                ng-submit="vm.hateoas.visiteurs.addRelation(visiteur, activite)"
-                >
-                <select
-                    ng-model="visiteur"
-                    ng-options="visiteur.prenom for visiteur in vm.hateoas.visiteurs.list"
-                    ></select>
-                <select
-                    ng-model="activite"
-                    ng-options="activite for activite in vm.hateoas.activites.list"
-                    ></select>
-                </select>
-                <button class="btn btn-primary">Inscrire</button>
-            </form>
-        </md-content>
-    </div>
+		<div ng-show="vm.hateoas.visiteurs.list.length">
+			liste des visiteurs
+			<div ng-repeat="visiteur in vm.hateoas.visiteurs.list">
+				<li>{{visiteur.prenom}} {{visiteur.nom}} <span remove-on-click
+						ng-click="vm.hateoas.visiteurs.remove(visiteur)"> supprimer
+					</span> <span
+						ng_click="activites = vm.hateoas.visiteurs.getRelations(visiteur, 'activite')">activite</span>
+					<div ng-repeat="activite in activites">{{activite}}</div>
+				</li>
+			</div>
+		</div>
+
+
+
+		<form class="form-horizontal" role="form"
+			ng-submit="vm.hateoas.visiteurs.addRelation(visiteur, activite)">
+			<select ng-model="visiteur"
+				ng-options="visiteur.prenom for visiteur in vm.hateoas.visiteurs.list"></select>
+			<select ng-model="activite"
+				ng-options="activite for activite in vm.hateoas.activites.list"></select>
+			</select>
+			<button class="btn btn-primary">Inscrire</button>
+		</form>
+	</div>
 </body>
 </html>
-

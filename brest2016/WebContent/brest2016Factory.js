@@ -15,7 +15,7 @@
 
 angular.module('brest2016App').factory('Brest2016Factory', factory);
 
-function factory($mdToast,growl) {
+function factory(growl) {
 	console.log('Factory init');
 	var services = {
 			

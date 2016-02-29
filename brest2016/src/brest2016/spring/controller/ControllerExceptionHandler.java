@@ -6,6 +6,7 @@ package brest2016.spring.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -40,8 +41,11 @@ import brest2016.spring.controller.ServerMessages;
 @EnableWebMvc
 @ControllerAdvice
 public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
+	
+	final Logger log = Logger.getLogger(this.getClass());
+	
 	public ControllerExceptionHandler() {
-		System.out.println("ControllerExceptionHandler: Initialisation des gestionnaires d'erreurs");
+		log.info("ControllerExceptionHandler: Initialisation des gestionnaires d'erreurs");
 	}
 
 	@ExceptionHandler(ConstraintViolationException.class)
@@ -51,7 +55,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
 		for(ConstraintViolation<?> violation : ex.getConstraintViolations()) {
 			String error= "Valeur '" +violation.getInvalidValue() +"' de "  + violation.getRootBeanClass().getSimpleName() + "."  +  violation.getPropertyPath() + " ne respecte pas la contrainte '" + violation.getMessage() + "'";
 			serverMessages.add(new ServerMessage(error,"warning"));
-            System.out.println(error);
+            log.info(error);
         }
 		return new ResponseEntity<ServerMessages>(serverMessages, HttpStatus.BAD_REQUEST);
 	}
@@ -72,7 +76,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
 			error = objectError.getObjectName() + ": " + objectError.getDefaultMessage();
 			serverMessages.add(new ServerMessage(error,"warning"));
 		}
-		System.out.println("handleMethodArgumentNotValid" + errors.toString());
+		log.info("handleMethodArgumentNotValid" + errors.toString());
 		return new ResponseEntity<Object>(serverMessages, headers, status);
 	}
 
@@ -110,9 +114,9 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
 		return new ResponseEntity<ServerMessages>(serverMessages, HttpStatus.BAD_REQUEST);
 	}
 	
-	@ExceptionHandler(Exception.class)
-	protected void genericExceptionHandler(Exception exception){
-		System.out.println("Exception generique" + exception.getClass().getName());
-	}
+//	@ExceptionHandler(Exception.class)
+//	protected void genericExceptionHandler(Exception exception){
+//		log.info("Exception generique" + exception.getClass().getName());
+//	}
 
 }

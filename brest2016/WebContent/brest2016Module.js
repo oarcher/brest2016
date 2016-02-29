@@ -22,11 +22,11 @@
 	// interroger un
 	// serveur spring-data-rest
 	'spring-data-rest',
-
-	// angular material
-	'ngMaterial',
-	
-	'angular-growl'])
+	'ui.calendar', 'ui.bootstrap',
+	'angular-growl',
+	'ngDragDrop',
+        'ngMessages'
+    ])
 	
 	.config(['growlProvider','$httpProvider', function(growlProvider,$httpProvider) {
 		  growlProvider.onlyUniqueMessages(false);

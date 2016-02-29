@@ -23,8 +23,6 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
-import bean.Horaire;
-import bean.Stand;
 
 /**
  * @author oarcher
@@ -47,51 +45,22 @@ public class Visiteur implements Serializable{
     
 	@NotBlank(message = "ne peux pas être vide")
 	private String nom="";
+	
+	
 	@NotBlank(message="ne peux pas être vide")
 	private String prenom="";
 	
-//	@OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-//	@JoinTable(name = "oarcher_visiteur_horaire_stand", joinColumns = @JoinColumn(name = "idHoraire") , inverseJoinColumns = @JoinColumn(name = "idStand") )
-//	private Collection<Horaire> horaire = new ArrayList<Horaire>();
+	private String password="";
 	
 	
 	// tout le monde partage les memes horaires
 	@ManyToMany
-	@JoinTable(name = "oarcher_activite_visiteur", joinColumns = @JoinColumn(name = "idVisiteur") , inverseJoinColumns = @JoinColumn(name = "idActivite") )
+	//parametre de JoinTable inutiles si les tables et colonnes respectent le nommage par defaut
+	//@JoinTable(name = "oarcher_visiteur_oarcher_activite", joinColumns = @JoinColumn(name = "visiteur_id") , inverseJoinColumns = @JoinColumn(name = "activite_id") )
+	@JoinTable
 	private Set<Activite> activite = new HashSet<Activite>();
 
 	
-//	public Visiteur() {
-//	}
-
-//	public Visiteur(Long id, String nom, String prenom) {
-//		this.id=id;
-//		this.nom=nom;
-//		this.prenom=prenom;
-//	}
-	
-//	// copy constructor
-//	public Visiteur(Visiteur animation){
-//		this.id=animation.id;
-//		this.nom=animation.nom;
-//		this.prenom=animation.prenom;
-//	}
-	
-	
-
-//	public String toString(){
-//		return "id : " + this.id + " nom : " + this.nom + " prenom : " + this.prenom;
-//	}
-//	
-//	public Long getId() {
-//		return id;
-//	}
-
-//	public void setId(Long id) {
-//		this.id = id;
-//	}
-
-
 
 	public String getNom() {
 		return nom;

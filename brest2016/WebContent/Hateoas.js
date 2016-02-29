@@ -183,7 +183,7 @@
 				Brest2016Factory.showMessage(self.restObject + ' supprimé!');
 				return removed;
 			}, function(errors) {
-				showMessages(errors);
+				Brest2016Factory.showMessages(errors);
 				console.log(errors);
 			});
 		}
@@ -484,11 +484,12 @@
 		 */
 		function getterSetterRelation(element, otherElement) {
 			var self = this;
-			// console.log('getterSetterRelation dans ' + self.restObject);
+                        // console.log('getterSetterRelation dans ' + self.restObject + ' entre ' + JSON.stringify(element) + ' et ' + JSON.stringify(otherElement));
 			var hrefElement = getSelfHref(element);
 			var hrefOtherElement = getSelfHref(otherElement);
 			var otherRestObject = getRestObjectFromHref(hrefOtherElement);
 			var idOtherElement = getIdFromHref(hrefOtherElement);
+                        
 			var hrefExist = getRelationHref(element, otherRestObject) + "/" + idOtherElement;
 
 			var getterSetter = function() {
@@ -505,7 +506,16 @@
 				// tant que ce ne sera pas true or false
 				// le getterSetter sera rappelé (jusqu'a la resolution de la
 				// promise)
-				self.scope.element[hrefElement].relation[hrefOtherElement] = "";
+                                // self.scope.element[hrefElement].relation[hrefOtherElement] = "";
+                                if(typeof self.scope.element[hrefElement].relation[hrefOtherElement] === "undefined"){
+                                    console.log('toute premiere fois')
+                                    self.scope.element[hrefElement].relation[hrefOtherElement] = 0
+                                } else {
+                                    self.scope.element[hrefElement].relation[hrefOtherElement]++
+                                    console.log('deja ' + self.scope.element[hrefElement].relation[hrefOtherElement] + ' fois')
+                                }
+                                
+                       
 				var debug = " entre " + hrefElement + ' et ' + hrefOtherElement + ' par ' + hrefExist
 				// est-ce que hrefExist est un lien valide ?
 				// oui => la relation existe
