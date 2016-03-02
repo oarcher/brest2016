@@ -13,14 +13,18 @@
 		/**
 		 * Constructeur
 		 */
-		function Hateoas(restObject) {
+		function Hateoas(restObject, bool_query) {
 			console.log('constructeur Hateoas pour ' + restObject);
 			this.restObject = restObject;
 			// list est la liste des objets retournée par query()
 			// toute mmodification de cette liste entraine la modification
 			// dans le scope de la fonction appelante.
-
-			this.list = this.query();
+			if (bool_query === false) {
+				console.log("bool_query false, appel a query() a faire explicitement ");
+				this.list = [];
+			} else {
+				this.list = this.query();
+			}
 			// scope de l'objet servant aux communications avec la vue html
 			this.scope = {};
 		}
@@ -32,11 +36,10 @@
 
 		Hateoas.prototype = {
 			query : query,
-			remove : remove,
-			create_old : create_old,
 			create : create,
-			getterSetter_old : getterSetter_old,
-			profile : profile,
+			// pas implementé : read : read,
+			update : update,
+			remove : remove,
 			getRelation : getRelation,
 			getRelations : getRelations,
 			addRelation : addRelation,
@@ -68,8 +71,11 @@
 						lst.push(element);
 					});
 					Brest2016Factory.showMessage(lst.length + ' ' + self.restObject + ' récupéré(s) du serveur');
+					if (callback) {
+						callback(lst)
+					}
+					;
 				});
-				if(callback){callback(lst)};
 			});
 			self.list = lst;
 			return self.list;
@@ -78,30 +84,6 @@
 		/**
 		 * read : retourne un element, par id
 		 */
-
-		/**
-		 * create : creation de l'element qui se trouve dans this.scope.acreer
-		 */
-
-		function create_old(nom) {
-			var self = this;
-			console.log('create ' + nom + ' dans ' + self.restObject);
-			var element = self.scope[nom];
-			console.log('create getter: ' + JSON.stringify(element));
-			var url = apiurl + self.restObject;
-			// console.log('create ' + self.restObject + ":" +
-			// JSON.stringify(self.scope.acreer));
-			$resource(url).save(element, function(created) {
-				console.log('callback create ok : ' + JSON.stringify(created));
-				self.list.push(created);
-				getterSetter(nom, self)({}); // on passe self au
-				// getterSetter, car la promise
-				// redefini this
-				Brest2016Factory.showMessage(self.restObject + ' créé!');
-				return created;
-			});
-
-		}
 
 		/**
 		 * element = create(element) creation d'un element dans le restObject.
@@ -114,11 +96,11 @@
 			console.log('create ' + JSON.stringify(element) + ' dans ' + self.restObject);
 			var url = apiurl + self.restObject;
 
-			for ( var field in element) {
-				if (element.hasOwnProperty(field)) {
-					console.log("valid : " + element.$valid);
-				}
-			}
+			// for ( var field in element) {
+			// if (element.hasOwnProperty(field)) {
+			// console.log("valid : " + element.$valid);
+			// }
+			// }
 
 			var copy_element = angular.copy(element);
 			$resource(url).save(element, function(created) {
@@ -132,15 +114,57 @@
 				}
 				Brest2016Factory.showMessage(self.restObject + ' créé!');
 				if (callbackok) {
-					callbackok(created)
+					callbackok(created);
 				}
 			}, function(error) {
 				if (callbacknok) {
-					callbacknok(error)
+					callbacknok(error);
 				}
 			});
 			return copy_element;
 
+		}
+
+		/**
+		 * update(element) mise a jour de l'element , sans modifier sont id
+		 */
+		function update(element) {
+			var self = this;
+			console.log('update ' + JSON.stringify(element) + ' dans ' + self.restObject);
+			var url = getSelfHref(element);
+			// var copy_element = angular.copy(element);
+			$resource(url, {}, {
+				'update' : {
+					method : 'PUT'
+				}
+			}).update(element, function(updated) {
+				Brest2016Factory.showMessage(self.restObject + ' mis a jour!');
+
+			});
+		}
+
+		/**
+		 * remove : suppression d'un element. element est un element hateoas
+		 * complet.
+		 * 
+		 */
+		function remove(element, callback) {
+			var self = this;
+			var self_url = element._links.self.href;
+			console.log('remove ' + JSON.stringify(element));
+			console.log('remove self_url' + JSON.stringify(self_url));
+			return $resource(self_url, {}).remove(function(removed) { // pourquoi
+				// return
+				// ??
+				// attention removed a des tags en plus, style $$hashkey. On
+				// utilise 'element'
+				var index = self.list.indexOf(element);
+
+				console.log(' retrait index ' + index);
+				self.list.splice(index, 1);
+				Brest2016Factory.showMessage(self.restObject + ' supprimé!');
+				callback(removed);
+			});
 		}
 
 		/**
@@ -168,30 +192,6 @@
 					return get_property(self.scope, nom);
 				}
 			}
-		}
-
-		/**
-		 * remove : suppression d'un element. element est un element hateoas
-		 * complet.
-		 * 
-		 */
-		function remove(element,callback) {
-			var self = this;
-			var self_url = element._links.self.href;
-			console.log('remove ' + JSON.stringify(element));
-			console.log('remove self_url' + JSON.stringify(self_url));
-			return $resource(self_url, {}).remove(function(removed) { // pourquoi
-				// return
-				// ??
-				// attention removed a des tags en plus, style $$hashkey. On
-				// utilise 'element'
-				var index = self.list.indexOf(element);
-
-				console.log(' retrait index ' + index);
-				self.list.splice(index, 1);
-				Brest2016Factory.showMessage(self.restObject + ' supprimé!');
-				callback(removed);
-			});
 		}
 
 		/**
@@ -245,9 +245,10 @@
 		 */
 		function getRelation(element, relation, callback) {
 			var self = this;
-			//console.log('getRelation ' + JSON.stringify(element) + " " + relation);
+			// console.log('getRelation ' + JSON.stringify(element) + " " +
+			// relation);
 			var hrefRelation = getRelationHref(element, relation);
-			//console.log('getRelation ' + hrefRelation);
+			// console.log('getRelation ' + hrefRelation);
 			var lst = [];
 			console.log('curl ' + hrefRelation);
 			$resource(hrefRelation, {}).get(function(response) {
@@ -261,7 +262,7 @@
 		 * 
 		 */
 		function getRelations(element, relation, callback) {
-			var lst=[];
+			var lst = [];
 			getRelation(element, relation, function(response) {
 				console.log('getRelations raw : ' + JSON.stringify(response));
 				SpringDataRestAdapter.process(response).then(function(processedResponse) {
@@ -316,117 +317,7 @@
 			return lst; // sera rempli plus tard par la promise
 
 		}
-		// test = {
-		// "_links" : {
-		// "self" : {
-		// "href" : "http://localhost:8080/brest2016/rest/activites/1"
-		// },
-		// "activite" : {
-		// "href" : "http://localhost:8080/brest2016/rest/activites/1"
-		// },
-		// "horaire" : {
-		// "href" : "http://localhost:8080/brest2016/rest/activites/1/horaire"
-		// },
-		// "visiteur" : {
-		// "href" : "http://localhost:8080/brest2016/rest/activites/1/visiteur"
-		// },
-		// "stand" : {
-		// "href" : "http://localhost:8080/brest2016/rest/activites/1/stand"
-		// }
-		// }
-		// }
-		// test = {
-		// "_links" : {
-		// "self" : {
-		// "href" : "http://localhost:8080/brest2016/rest/activites/1"
-		// },
-		// "activite" : {
-		// "href" : "http://localhost:8080/brest2016/rest/activites/1"
-		// },
-		// "horaire" : {
-		// "href" : "http://localhost:8080/brest2016/rest/activites/1/horaire"
-		// },
-		// "visiteur" : {
-		// "href" : "http://localhost:8080/brest2016/rest/activites/1/visiteur"
-		// },
-		// "stand" : {
-		// "href" : "http://localhost:8080/brest2016/rest/activites/1/stand"
-		// }
-		// },
-		// "horaire" : {
-		// "plage" : "matin",
-		// "_links" : {
-		// "self" : {
-		// "href" : "http://localhost:8080/brest2016/rest/horaires/1"
-		// },
-		// "horaire" : {
-		// "href" : "http://localhost:8080/brest2016/rest/horaires/1"
-		// },
-		// "activite" : {
-		// "href" : "http://localhost:8080/brest2016/rest/horaires/1/activite"
-		// }
-		// }
-		// },
-		// "activite" : {
-		// "_links" : {
-		// "self" : {
-		// "href" : "http://localhost:8080/brest2016/rest/activites/1"
-		// },
-		// "activite" : {
-		// "href" : "http://localhost:8080/brest2016/rest/activites/1"
-		// },
-		// "horaire" : {
-		// "href" : "http://localhost:8080/brest2016/rest/activites/1/horaire"
-		// },
-		// "visiteur" : {
-		// "href" : "http://localhost:8080/brest2016/rest/activites/1/visiteur"
-		// },
-		// "stand" : {
-		// "href" : "http://localhost:8080/brest2016/rest/activites/1/stand"
-		// }
-		// }
-		// },
-		// "visiteur" : {
-		// "_links" : {
-		// "self" : {
-		// "href" : "http://localhost:8080/brest2016/rest/activites/1/visiteur"
-		// }
-		// },
-		// "_embeddedItems" : [ {
-		// "nom" : "Archer",
-		// "prenom" : "Olivier",
-		// "_links" : {
-		// "self" : {
-		// "href" : "http://localhost:8080/brest2016/rest/visiteurs/1"
-		// },
-		// "visiteur" : {
-		// "href" : "http://localhost:8080/brest2016/rest/visiteurs/1"
-		// },
-		// "activite" : {
-		// "href" : "http://localhost:8080/brest2016/rest/visiteurs/1/activite"
-		// }
-		// }
-		// } ]
-		// },
-		// "stand" : {
-		// "nom" : "Recouvrane",
-		// "descr" : "Visite",
-		// "_links" : {
-		// "self" : {
-		// "href" : "http://localhost:8080/brest2016/rest/stands/1"
-		// },
-		// "stand" : {
-		// "href" : "http://localhost:8080/brest2016/rest/stands/1"
-		// },
-		// "activite" : {
-		// "href" : "http://localhost:8080/brest2016/rest/stands/1/activite"
-		// },
-		// "horaire" : {
-		// "href" : "http://localhost:8080/brest2016/rest/stands/1/horaire"
-		// }
-		// }
-		// }
-		// }
+
 		/**
 		 * addRelation
 		 * 
@@ -441,10 +332,10 @@
 		 *            http://localhost:8080/brest2016/rest/visiteurs/1/activite
 		 *            permet de lier activite/2 aux activitées du visiteur/1
 		 */
-		function addRelation(element, otherElement) {
-			//console.log("addRelation");
-			//console.log("element :" + JSON.stringify(element));
-			//console.log("otherElement :" + JSON.stringify(otherElement));
+		function addRelation(element, otherElement, callback) {
+			// console.log("addRelation");
+			// console.log("element :" + JSON.stringify(element));
+			// console.log("otherElement :" + JSON.stringify(otherElement));
 			var hrefOtherElement = getSelfHref(otherElement);
 			// console.log('hrefOtherElement ' + hrefOtherElement);
 			var otherRestObject = getRestObjectFromHref(hrefOtherElement);
@@ -464,6 +355,7 @@
 				}
 			}).post(hrefOtherElement, function(success) {
 				Brest2016Factory.showMessage("Relation créée " + message);
+				callback();
 			}, function(error) {
 				Brest2016Factory.showMessage("Erreur à la création de la relation " + message + " : " + JSON.stringify(error), "error");
 			});
@@ -614,7 +506,6 @@
 			return href.match(/.*\/rest\/.*\/(\d+)/)[1];
 		}
 
-		
 		/**
 		 * getSelfHref retourne l'url self d'un element
 		 */
@@ -625,10 +516,10 @@
 		/**
 		 * getIdFromElement retourne l'id d'un element
 		 */
-		function getIdFromElement(element){
+		function getIdFromElement(element) {
 			return getIdFromHref(getSelfHref(element));
 		}
-		
+
 		/**
 		 * getRestObject retourne le restObject d'un élément
 		 */
@@ -643,7 +534,7 @@
 		 */
 		function getRelationHref(element, relation) {
 			// fixme relation est au pluriel si il y en a plusieurs ..
-			//console.log('getRelationHref ' + relation + " " + JSON.stringify(element));
+			console.log('getRelationHref ' + relation + " " + JSON.stringify(element));
 			// if(!element._links.hasOwnProperty(relation)){
 			// relation=relation+"s";
 			// }

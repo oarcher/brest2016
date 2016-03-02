@@ -2,8 +2,9 @@
  * http://usejsdoc.org/
  */
 
+
 (function() {
-	// 'use strict'; // attention, risque de $http undefined ..
+	'use strict'; 
 
 	angular.module('brest2016App').service('StandService',
 			[ '$http', function($http) {
@@ -33,15 +34,5 @@
 
 			} ]);
 
-	// .service('StandService', standService);
-	// function standService() {
-	//
-	// this.salut = salut;
-	//			
-	// function salut() {
-	// alert('service');
-	// return "salut service";
-	// }
-	// }
 
 })();

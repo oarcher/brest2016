@@ -14,7 +14,7 @@ angular.module('brest2016App').controller('Brest2016Controller', brest2016Contro
  * @param growl
  * @param Stand
  */
-function brest2016Controller(Brest2016Factory, Hateoas, brest2016Calendar) {
+function brest2016Controller(Brest2016Factory, Hateoas, Brest2016Calendar) {
 	// on préfère l'utilisation de 'this' a $scope
 
 	/**
@@ -46,130 +46,128 @@ function brest2016Controller(Brest2016Factory, Hateoas, brest2016Calendar) {
 	vm.hateoas = {};
 	vm.hateoas.moyens = new Hateoas("moyens");
 	vm.hateoas.visiteurs = new Hateoas("visiteurs");
-	vm.hateoas.activites = new Hateoas("activites");
-	
-	vm.calendar = new brest2016Calendar("brest2016calendar");
+	// les activites ne seront pas recupérées
+	// par le constructeur, c'est le calendrier qui le fera
+	vm.hateoas.activites = new Hateoas("activites", false);
 
-	//FIXME affichage initialisation
-//	vm.hateoas.activites.query(function(activites) {
-//		activites.forEach(function(activite) {
-//			var event = activite2event(activite);
-//			vm.calendar.addEvent(event);
-//		});
-//		console.log('activites recupérées');
-//		vm.calendar.fullCalendar('rerenderEvents');
-//		vm.calendar.fullCalendar("refetchEvents");
-//	});
+	// mise en place du calendrier, et des evenements
+	// associés, en particulier addActiviteToCalendar pour ajouter
+	// des activites
+
+	vm.calendar = new Brest2016Calendar("brest2016calendar");
+	vm.calendar.setConfig(calendarActiviteActions(vm.calendar,vm.hateoas.activites));
 
 
-	function activite2event(activite) {
-		var event = {};
-		var id = vm.hateoas.activites.getIdFromElement(activite);
-		event.id = id;
-		event.title = "pas encore resolu par la promise";
-		event.start = activite.datedebut;
-		event.end = activite.datefin;
-		event.original = activite;
-		vm.hateoas.activites.getRelation(activite, "moyen", function(moyen) {
-			// console.log('recu :' + JSON.stringify(moyen));
-			event.title = moyen.nom + " " + id;
+	// on recupere les activites pour les
+	// mettre dans le calendrier
+	vm.hateoas.activites.query(function(activites) {
+		console.log('Ajout dans le calendier de ' + activites.length + "activitées")
+		activites.forEach(function(activite) {
+			// calendar_actions.addActiviteToCalendar(activite);
+			vm.calendar.addActiviteToCalendar(activite);
+			
 		});
-		return event;
-	}
+		console.log('activites ajoutée');
+	});
 
-	function events(start, end, timezone, callback) {
-		// voir http://fullcalendar.io/docs/event_data/events_function/
-		console.log('map activite vers event')
-		var events = [];
-		vm.hateoas.activites.list.forEach(function(activite) {
+	/**
+	 * implementation des fonctions
+	 */
 
-			var id = vm.hateoas.activites.getIdFromElement(activite);
-			var event = vm.calendar.findEventById(id);
-			console.log("event d'id " + id + " : " + JSON.stringify(event));
-			if (!event) {
-				// l'activité, n'est pas encore dans le calendrier
+	function calendarActiviteActions(calendar,activitesObj) {
 
-				event = activite2event(activite);
-				vm.calendar.addEvent(event);
-				events.push(event);
-				console.log('activite id ' + id + ' mise dans le calendrier');
+		/**
+		 * Ajout d'une activite sur le calendrier
+		 */
 
-			} else {
-				console.log('activite id ' + id + ' deja dans le calendrier');
-				// l'activité existe deja, mais fullcalendar la veux pour
-				// son callback
-				events.push(event);
-			}
-		});
-		callback(events); // appel du callback fullcalendar
+		var addActiviteToCalendar = function(activite) {
+			var event = {};
+			var id = activitesObj.getIdFromElement(activite);
+			event.id = id;
+			event.title = "pas encore resolu par la promise";
+			event.start = activite.datedebut;
+			event.end = activite.datefin;
+			event.original = activite;
+			activitesObj.getRelation(activite, "moyen", function(moyen) {
+				// console.log('recu :' + JSON.stringify(moyen));
+				event.title = moyen.nom + " " + id;
+				calendar.addEvent(event);
+			});
+			return event;
+		};
 
-	}
-
-	vm.calendar.fullCalendar({
-		events : events,
-		eventClick : function(event, jsEvent, view) {
-
-			// alert('Event: ' + JSON.stringify(event));
-			// alert('Coordinates: ' + jsEvent.pageX + ',' + jsEvent.pageY);
-			// alert('View: ' + view.name);
-
-			// change the border color just for fun
-			$(this).css('border-color', 'red');
-			if (confirm("Delete " + JSON.stringify(event.id) + "?")) {
-				var activite = event.original;
-				vm.hateoas.activites.remove(activite, function(removed) {
-					vm.calendar.removeEvent(event);
-				});
-			}
-
-		},
-
-		eventDrop : function(event, delta, revertFunc) {
-			// ca bug au niveau de l'affichage ...
-
-			alert(event.title + " was dropped on " + event.start.format());
-
-			if (!confirm("Are you sure about this change?")) {
-				revertFunc();
-			}
-			// else {
-			// this.remove; // on retire le DOM créé temporairement par le
-			// // drop
-			// }
-		},
-
-		eventReceive : function(moyen) {
-			console.log('eventReceive moyen:' + JSON.stringify(moyen));
-			// var copy_moyen = JSON.parse(JSON.stringify(moyen));
-			// var copy_moyen = moyen;
-			moyen.title = "pas d'id , ne doit pas s'afficher";
-			vm.hateoas.activites.create({
+		/**
+		 * appelé par le drop d'un moyen sur le calendrier moyen est un
+		 * restObject auquel fullCalendar a ajouté les fields start et end (date
+		 * de debut et fin) voir
+		 * http://fullcalendar.io/docs/dropping/eventReceive/
+		 */
+		var moyenToEventActivite = function(moyen) {
+			// var event={};
+			// moyen.title = "pas d'id , ne doit pas s'afficher";
+			activitesObj.create({
 				lieu : 'lieu par defaut',
 				datedebut : moyen.start,
 				datefin : moyen.end,
 			}, function(activite) {
-				console.log('eventReceive activite cree:' + JSON.stringify(activite));
-				var activite_event = {};
-				var id = vm.hateoas.activites.getIdFromElement(activite);
-				activite_event.title = moyen.nom + " " + id + " (new)";
-				activite_event.start = moyen.start;
-				activite_event.stop = moyen.stop;
-				activite_event.id = id;
-				activite_event.original = activite;
-				vm.hateoas.activites.addRelation(activite, moyen);
-				vm.calendar.addEvent(activite_event);
+				activitesObj.addRelation(activite, moyen, function() {
+					addActiviteToCalendar(activite);
+				});
 			});
+		};
 
-		},
-		// eventDestroy : function(event, element, view) {
-		// console.log('eventDestroy' + JSON.stringify(event));
-		// },
-		eventRender : function(event, element) {
-
-			if (!event.id) { // Render seulement si valide
-				return false;
+		/**
+		 * suppression d'un event sur le calendrier c'est un callback eventClick
+		 * de fullCalendar http://fullcalendar.io/docs/mouse/eventClick/
+		 * 
+		 */
+		var removeEventActivite = function(event, jsEvent, view) {
+			var old_color = $(this).css('border-color');
+			$(this).css('border-color', 'red');
+			if (confirm("Delete " + JSON.stringify(event.id) + "?")) {
+				var activite = event.original;
+				activitesObj.remove(activite, function(removed) {
+					calendar.removeEvent(event);
+				});
+			} else {
+				$(this).css('border-color', old_color);
 			}
-		}
-	});
+		};
+
+		/**
+		 * deplacement d'un evenement sur le calendrier c'est un callback
+		 * fullCalendar de type eventDrop
+		 * http://fullcalendar.io/docs/event_ui/eventDrop/
+		 */
+		var moveEventActivite = function(event, delta, revertFunc) {
+			console.log('deplacement de ' + event.id + ' a ' + event.start.format());
+			console.log('event.end : ' + event.end.format());
+			console.log('event original' + JSON.stringify(event.original));
+			// alert(event.title + " was dropped on " + event.start.format());
+
+			if (!confirm("Are you sure about this change?")) {
+				revertFunc();
+			} else {
+				event.original.datedebut = event.start.format();
+				event.original.datefin = event.end.format();
+				activitesObj.update(event.original);
+			}
+
+		};
+
+		return {
+			// fonctions supplémentaires
+			addActiviteToCalendar : addActiviteToCalendar,
+			config : {
+				calendar : {
+					// callBack fullCalendar
+					eventClick : removeEventActivite,
+					eventDrop : moveEventActivite,
+					eventReceive : moyenToEventActivite,
+				}
+			}
+
+		};
+	}
 
 }
