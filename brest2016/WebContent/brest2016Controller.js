@@ -43,24 +43,23 @@ function brest2016Controller(Brest2016Factory, Hateoas, Brest2016Calendar) {
 	// var hateoas_root = new Hateoas('');
 	// var restobjects_list = hateoas_root.profile() // FIXME promise ....
 	// pour chaque objet, on créé une instance hateoas, visible dans vm
-	vm.hateoas = {};
-	vm.hateoas.moyens = new Hateoas("moyens");
-	vm.hateoas.visiteurs = new Hateoas("visiteurs");
+	vm.moyens = new Hateoas("moyens");
+	vm.visiteurs = new Hateoas("visiteurs");
 	// les activites ne seront pas recupérées
 	// par le constructeur, c'est le calendrier qui le fera
-	vm.hateoas.activites = new Hateoas("activites", false);
+	vm.activites = new Hateoas("activites", false);
 
 	// mise en place du calendrier, et des evenements
 	// associés, en particulier addActiviteToCalendar pour ajouter
 	// des activites
 
 	vm.calendar = new Brest2016Calendar("brest2016calendar");
-	vm.calendar.setConfig(calendarActiviteActions(vm.calendar,vm.hateoas.activites));
+	vm.calendar.setConfig(calendarActiviteActions(vm.calendar,vm.activites));
 
 
 	// on recupere les activites pour les
 	// mettre dans le calendrier
-	vm.hateoas.activites.query(function(activites) {
+	vm.activites.query(function(activites) {
 		console.log('Ajout dans le calendier de ' + activites.length + "activitées")
 		activites.forEach(function(activite) {
 			// calendar_actions.addActiviteToCalendar(activite);

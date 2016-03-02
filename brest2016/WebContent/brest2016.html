@@ -61,17 +61,17 @@
 			</ul>
 
 			<form class="form-horizontal" role="form" name="create_moyen_form"
-				ng-submit="moyen_a_creer = vm.hateoas.moyens.create(moyen_a_creer)">
+				ng-submit="moyen_a_creer = vm.moyens.create(moyen_a_creer)">
 				<label class="control-label">Moyen</label> nom :<input type="text"
 					ng-model="moyen_a_creer.nom" />
 				<button class="btn btn-primary">Add</button>
 			</form>
 
-			<div ng-show="vm.hateoas.moyens.list.length">
+			<div ng-show="vm.moyens.list.length">
 				<h4>liste des moyens</h4>
 				A deployer par drag & drop sur le calendrier
 
-				<div ng-repeat="moyen in vm.hateoas.moyens.list">
+				<div ng-repeat="moyen in vm.moyens.list">
 					<div class="btn btn-default btn-sm" data-drag="true"
 						data-event="{{moyen}}" 
 						data-jqyoui-options="{revert: true}" jqyoui-draggable>{{moyen.nom}}
@@ -102,9 +102,9 @@
 						calendar="{{vm.calendar.name}}"></div>
 
 
-					<div ng-show="vm.hateoas.activites.list.length">
+					<div ng-show="vm.activites.list.length">
 						liste des stands
-						<div ng-repeat="activite in vm.hateoas.activites.list">
+						<div ng-repeat="activite in vm.activites.list">
 							<li>nom: {{activite.nom}} lieu: {{activite.lieu}} <span
 									ng-click="vm.calendar.addActivite(activite)"> vers
 									agenda </span>
@@ -115,7 +115,7 @@
 					<div>
 						<form class="form-horizontal" role="form"
 							name="create_activite_form"
-							ng-submit="activite_a_creer = vm.hateoas.activites.create(activite_a_creer)">
+							ng-submit="activite_a_creer = vm.activites.create(activite_a_creer)">
 							<label class="control-label">Activite</label> nom :<input
 								type="text" ng-model="activite_a_creer.nom" minlength="2"
 								maxlength="15" />
@@ -130,22 +130,22 @@
 							<button class="btn btn-primary">Add</button>
 						</form>
 
-						<div ng-show="vm.hateoas.activites.list.length">
+						<div ng-show="vm.activites.list.length">
 							liste des stands
-							<div ng-repeat="activite in vm.hateoas.activites.list">
+							<div ng-repeat="activite in vm.activites.list">
 								<li>nom: {{activite.nom}} lieu: {{activite.lieu}} <span
 										remove-on-click
-										ng-click="vm.hateoas.activites.remove(activite)">
-										supprimer </span> <!-- 						<span ng-repeat="horaire in vm.hateoas.horaires.list"> -->
+										ng-click="vm.activites.remove(activite)">
+										supprimer </span> <!-- 						<span ng-repeat="horaire in vm.horaires.list"> -->
 									<!-- 						<label>{{horaire.plage}} <input type="checkbox" -->
-									<!-- 							ng-model-options="{getterSetter: true}" --> <!-- 							ng-model="vm.hateoas.stands.getterSetterRelation(stand, horaire)" /> -->
+									<!-- 							ng-model-options="{getterSetter: true}" --> <!-- 							ng-model="vm.stands.getterSetterRelation(stand, horaire)" /> -->
 									<!-- 						</label> --> <!-- 					</span> -->
 								</li>
 							</div>
 						</div>
 
 						<form class="form-horizontal" role="form"
-							ng-submit="visiteur_a_creer = vm.hateoas.visiteurs.create(visiteur_a_creer)">
+							ng-submit="visiteur_a_creer = vm.visiteurs.create(visiteur_a_creer)">
 							<label class="control-label">Visiteur</label> <input type="text"
 								ng-model="visiteur_a_creer.prenom" /> <input type="text"
 								ng-model="visiteur_a_creer.nom" /> <input type="text"
@@ -155,14 +155,14 @@
 
 
 
-						<div ng-show="vm.hateoas.visiteurs.list.length">
+						<div ng-show="vm.visiteurs.list.length">
 							liste des visiteurs
-							<div ng-repeat="visiteur in vm.hateoas.visiteurs.list">
+							<div ng-repeat="visiteur in vm.visiteurs.list">
 								<li>{{visiteur.prenom}} {{visiteur.nom}} <span
 										remove-on-click
-										ng-click="vm.hateoas.visiteurs.remove(visiteur)">
+										ng-click="vm.visiteurs.remove(visiteur)">
 										supprimer </span> <span
-										ng_click="activites = vm.hateoas.visiteurs.getRelations(visiteur, 'activite')">activite</span>
+										ng_click="activites = vm.visiteurs.getRelations(visiteur, 'activite')">activite</span>
 									<div ng-repeat="activite in activites">{{activite}}</div>
 								</li>
 							</div>
@@ -171,11 +171,11 @@
 
 
 						<form class="form-horizontal" role="form"
-							ng-submit="vm.hateoas.visiteurs.addRelation(visiteur, activite)">
+							ng-submit="vm.visiteurs.addRelation(visiteur, activite)">
 							<select ng-model="visiteur"
-								ng-options="visiteur.prenom for visiteur in vm.hateoas.visiteurs.list"></select>
+								ng-options="visiteur.prenom for visiteur in vm.visiteurs.list"></select>
 							<select ng-model="activite"
-								ng-options="activite for activite in vm.hateoas.activites.list"></select>
+								ng-options="activite for activite in vm.activites.list"></select>
 							</select>
 							<button class="btn btn-primary">Inscrire</button>
 						</form>
