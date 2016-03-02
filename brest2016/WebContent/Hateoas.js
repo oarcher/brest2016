@@ -34,20 +34,22 @@
 			query : query,
 			remove : remove,
 			create_old : create_old,
-			create: create,
+			create : create,
 			getterSetter_old : getterSetter_old,
 			profile : profile,
+			getRelation : getRelation,
 			getRelations : getRelations,
 			addRelation : addRelation,
 			addOrRemoveRelation : addOrRemoveRelation,
 			getterSetterRelation : getterSetterRelation,
 			dumpScope : dumpScope,
+			getIdFromElement : getIdFromElement
 		}
 
 		/**
 		 * query : retourne tous les elements, met a jour this.list
 		 */
-		function query() {
+		function query(callback) {
 			var self = this;
 			var query_url = apiurl + self.restObject;
 			console.log('query url ' + query_url);
@@ -67,6 +69,7 @@
 					});
 					Brest2016Factory.showMessage(lst.length + ' ' + self.restObject + ' récupéré(s) du serveur');
 				});
+				if(callback){callback(lst)};
 			});
 			self.list = lst;
 			return self.list;
@@ -99,36 +102,42 @@
 			});
 
 		}
-		
+
 		/**
-		 * element = create(element)
-		 * creation d'un element dans le restObject.
-		 * une copie de l'element est retournée, et cette copie est vidée en cas de succes
-		 * (pour permettre un reset des champs du formulaire)
+		 * element = create(element) creation d'un element dans le restObject.
+		 * une copie de l'element est retournée, et cette copie est vidée en cas
+		 * de succes (pour permettre un reset des champs du formulaire)
 		 * 
 		 */
-		function create(element) {
+		function create(element, callbackok, callbacknok) {
 			var self = this;
 			console.log('create ' + JSON.stringify(element) + ' dans ' + self.restObject);
 			var url = apiurl + self.restObject;
-			
-			for (var field in element) {
-		        if (element.hasOwnProperty(field)) {
-		        	console.log("valid : " + element.$valid);
-		        }
-		    }
-			
+
+			for ( var field in element) {
+				if (element.hasOwnProperty(field)) {
+					console.log("valid : " + element.$valid);
+				}
+			}
+
 			var copy_element = angular.copy(element);
 			$resource(url).save(element, function(created) {
 				console.log('callback create ok : ' + JSON.stringify(created));
 				self.list.push(created);
 				// on vide les champs de l'élément reourné.
-				for (var field in copy_element) {
-			        if (copy_element.hasOwnProperty(field)) {
-			        	copy_element[field] = "";
-			        }
-			    }
+				for ( var field in copy_element) {
+					if (copy_element.hasOwnProperty(field)) {
+						copy_element[field] = "";
+					}
+				}
 				Brest2016Factory.showMessage(self.restObject + ' créé!');
+				if (callbackok) {
+					callbackok(created)
+				}
+			}, function(error) {
+				if (callbacknok) {
+					callbacknok(error)
+				}
 			});
 			return copy_element;
 
@@ -166,7 +175,7 @@
 		 * complet.
 		 * 
 		 */
-		function remove(element) {
+		function remove(element,callback) {
 			var self = this;
 			var self_url = element._links.self.href;
 			console.log('remove ' + JSON.stringify(element));
@@ -181,10 +190,7 @@
 				console.log(' retrait index ' + index);
 				self.list.splice(index, 1);
 				Brest2016Factory.showMessage(self.restObject + ' supprimé!');
-				return removed;
-			}, function(errors) {
-				Brest2016Factory.showMessages(errors);
-				console.log(errors);
+				callback(removed);
 			});
 		}
 
@@ -231,54 +237,81 @@
 		}
 
 		/**
-		 * getRelations recupere la liste des objets en relation avec un element
-		 * donné. C'est juste un get sur l'href de l'élément, auquel on a
-		 * concaténé le nom de la relation par exemple : curl -i
-		 * http://localhost:8080/brest2016/rest/stands/1/horaire retourne les
-		 * horaires en relation avec le stand 1
-		 * 
-		 * On peut forcer a suivre recursivement les liens par allLinks = true
+		 * recupere le contenu du lien d'une relation si il y a des
+		 * _embeddedItems, il seront retournés tel quel (pas de tableaux)
+		 * utiliser getRelations pour gerer les _embeddedItems, et le retour du
+		 * tableau. getRelation ne retourne rien, il faut passer par le callback
+		 * pour la reponse
+		 */
+		function getRelation(element, relation, callback) {
+			var self = this;
+			//console.log('getRelation ' + JSON.stringify(element) + " " + relation);
+			var hrefRelation = getRelationHref(element, relation);
+			//console.log('getRelation ' + hrefRelation);
+			var lst = [];
+			console.log('curl ' + hrefRelation);
+			$resource(hrefRelation, {}).get(function(response) {
+				callback(response);
+			});
+		}
+
+		/**
+		 * getRelations retounre la liste des objets en relation avec un element
+		 * donné.
 		 * 
 		 */
-		function getRelations(element, relation, allLinks) {
-			if (allLinks) {
-				allLinks = '_allLinks';
-			}
+		function getRelations(element, relation, callback) {
+			var lst=[];
+			getRelation(element, relation, function(response) {
+				console.log('getRelations raw : ' + JSON.stringify(response));
+				SpringDataRestAdapter.process(response).then(function(processedResponse) {
+					console.log('getRelations : ' + JSON.stringify(processedResponse));
+					if (processedResponse._embeddedItems) {
+						angular.forEach(processedResponse._embeddedItems, function(element, key) {
+							console.log('query : ' + JSON.stringify(element));
+							lst.push(element);
+						});
+					} else {
+						console.log('pas _embeddedItems');
+						lst.push(processedResponse);
+					}
+					if (callback) {
+						callback(lst)
+					}
+				});
+			});
+			return lst; // sera resolu plus tard par la promise
+
+		}
+
+		/**
+		 * getDeepRelations recupere recursivement la liste des objets en
+		 * relation avec un element donné. FIXME : ne sert plus ??
+		 */
+		function getDeepRelations(element, relation, callback) {
 			var self = this;
 			console.log('getRelation ' + JSON.stringify(element) + " " + relation);
 			var hrefRelation = getRelationHref(element, relation);
 			console.log('getRelation ' + hrefRelation);
 			var lst = [];
 			$resource(hrefRelation, {}).get(function(response) {
-				// FIXME un peu le boxon, ca serait curieux que ca marche a chaque fois
+				// FIXME un peu le boxon, ca serait curieux que ca marche a
+				// chaque fois
 				var links = response._embedded[relation + 's'];
 				console.log('links ' + JSON.stringify(links));
 				links.forEach(function(rel) {
 					console.log('rel : ' + JSON.stringify(rel));
-					
+
 					for ( var key in rel._links) {
 						if (rel._links.hasOwnProperty(key)) {
-							if (['self', relation].indexOf(key) == -1) {
+							if ([ 'self', relation ].indexOf(key) == -1) {
 								lst.push(rel._links[key].href);
 								console.log('key : ' + key + ' ' + JSON.stringify(rel._links[key].href));
 							}
 						}
 					}
 				});
-
-				// SpringDataRestAdapter.process(response,
-				// allLinks).then(function(processedResponse) {
-				// console.log('processedResponse _allLinks :' +
-				// JSON.stringify(processedResponse));
-				// // angular.forEach(processedResponse._embeddedItems,
-				// function(element, key) {
-				// // angular.forEach(function(element){
-				// // console.log('relation : ' + JSON.stringify(element));
-				// // console.log('key : ' + JSON.stringify(key));
-				// // });
-				// // lst.push(element);
-				// // });
-				// });
+				callback(lst);
 			});
 			return lst; // sera rempli plus tard par la promise
 
@@ -400,28 +433,30 @@
 		 * @param element :
 		 *            l'element source
 		 * @param otherElement :
-		 *            l'element a ajouter en relation
-		 *             le but est de poster l'url de
-		 *            l'element detination sur l'url de l'element source suffixé
-		 *            par le nom du restObject par exemple, avec curl : curl -i
-		 *            -X POST -H 'Content-type: text/uri-list' -d
+		 *            l'element a ajouter en relation le but est de poster l'url
+		 *            de l'element detination sur l'url de l'element source
+		 *            suffixé par le nom du restObject par exemple, avec curl :
+		 *            curl -i -X POST -H 'Content-type: text/uri-list' -d
 		 *            'http://localhost:8080/brest2016/rest/activite/2'
 		 *            http://localhost:8080/brest2016/rest/visiteurs/1/activite
 		 *            permet de lier activite/2 aux activitées du visiteur/1
 		 */
 		function addRelation(element, otherElement) {
-			// console.log("addRelation");
-			// console.log("element :" + JSON.stringify(element));
-			// console.log("otherElement :" + JSON.stringify(otherElement));
+			//console.log("addRelation");
+			//console.log("element :" + JSON.stringify(element));
+			//console.log("otherElement :" + JSON.stringify(otherElement));
 			var hrefOtherElement = getSelfHref(otherElement);
+			// console.log('hrefOtherElement ' + hrefOtherElement);
 			var otherRestObject = getRestObjectFromHref(hrefOtherElement);
+			// console.log('otherRestObject ' + otherRestObject);
 			var hrefRelation = getRelationHref(element, otherRestObject);
 			var restObject = getRestObject(element);
 			// console.log("hrefRelation : " + hrefRelation);
 			var message = "entre " + restObject + " et " + otherRestObject;
+			console.log('curl -v -X PUT -H "Content-Type: text/uri-list" -d "' + hrefOtherElement + '" ' + hrefRelation);
 			$resource(hrefRelation, {}, {
 				post : {
-					method : "POST",
+					method : "PUT",
 					isArray : false,
 					headers : {
 						'Content-Type' : 'text/uri-list'
@@ -430,10 +465,15 @@
 			}).post(hrefOtherElement, function(success) {
 				Brest2016Factory.showMessage("Relation créée " + message);
 			}, function(error) {
-				Brest2016Factory.showMessage("Erreur à la création de la relation " + message + " : " + error);
+				Brest2016Factory.showMessage("Erreur à la création de la relation " + message + " : " + JSON.stringify(error), "error");
 			});
 		}
 
+		function addRelations(element, otherElements) {
+			otherElements.forEach(function(otherElement) {
+				addRelation(element, otherElement)
+			});
+		}
 		/**
 		 * removeRelation element : l'element auquel il faut supprimer une
 		 * relation otherElement : l'element a supprimer le but est de recupere
@@ -461,12 +501,6 @@
 
 		}
 
-		function addRelations(element, otherElements) {
-			otherElements.forEach(function(otherElement) {
-				addRelation(element, otherElement)
-			});
-		}
-
 		function addOrRemoveRelation(element, otherElement, bool) {
 			if (bool) {
 				console.log("addOrRemoveRelation : add");
@@ -484,12 +518,14 @@
 		 */
 		function getterSetterRelation(element, otherElement) {
 			var self = this;
-                        // console.log('getterSetterRelation dans ' + self.restObject + ' entre ' + JSON.stringify(element) + ' et ' + JSON.stringify(otherElement));
+			// console.log('getterSetterRelation dans ' +
+			// self.restObject + ' entre ' + JSON.stringify(element)
+			// + ' et ' + JSON.stringify(otherElement));
 			var hrefElement = getSelfHref(element);
 			var hrefOtherElement = getSelfHref(otherElement);
 			var otherRestObject = getRestObjectFromHref(hrefOtherElement);
 			var idOtherElement = getIdFromHref(hrefOtherElement);
-                        
+
 			var hrefExist = getRelationHref(element, otherRestObject) + "/" + idOtherElement;
 
 			var getterSetter = function() {
@@ -506,16 +542,16 @@
 				// tant que ce ne sera pas true or false
 				// le getterSetter sera rappelé (jusqu'a la resolution de la
 				// promise)
-                                // self.scope.element[hrefElement].relation[hrefOtherElement] = "";
-                                if(typeof self.scope.element[hrefElement].relation[hrefOtherElement] === "undefined"){
-                                    console.log('toute premiere fois')
-                                    self.scope.element[hrefElement].relation[hrefOtherElement] = 0
-                                } else {
-                                    self.scope.element[hrefElement].relation[hrefOtherElement]++
-                                    console.log('deja ' + self.scope.element[hrefElement].relation[hrefOtherElement] + ' fois')
-                                }
-                                
-                       
+				// self.scope.element[hrefElement].relation[hrefOtherElement]
+				// = "";
+				if (typeof self.scope.element[hrefElement].relation[hrefOtherElement] === "undefined") {
+					console.log('toute premiere fois')
+					self.scope.element[hrefElement].relation[hrefOtherElement] = 0
+				} else {
+					self.scope.element[hrefElement].relation[hrefOtherElement]++
+					console.log('deja ' + self.scope.element[hrefElement].relation[hrefOtherElement] + ' fois')
+				}
+
 				var debug = " entre " + hrefElement + ' et ' + hrefOtherElement + ' par ' + hrefExist
 				// est-ce que hrefExist est un lien valide ?
 				// oui => la relation existe
@@ -578,6 +614,7 @@
 			return href.match(/.*\/rest\/.*\/(\d+)/)[1];
 		}
 
+		
 		/**
 		 * getSelfHref retourne l'url self d'un element
 		 */
@@ -585,6 +622,13 @@
 			return getRelationHref(element, 'self');
 		}
 
+		/**
+		 * getIdFromElement retourne l'id d'un element
+		 */
+		function getIdFromElement(element){
+			return getIdFromHref(getSelfHref(element));
+		}
+		
 		/**
 		 * getRestObject retourne le restObject d'un élément
 		 */
@@ -598,6 +642,11 @@
 		 * 
 		 */
 		function getRelationHref(element, relation) {
+			// fixme relation est au pluriel si il y en a plusieurs ..
+			//console.log('getRelationHref ' + relation + " " + JSON.stringify(element));
+			// if(!element._links.hasOwnProperty(relation)){
+			// relation=relation+"s";
+			// }
 			return element._links[relation].href;
 		}
 

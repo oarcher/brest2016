@@ -53,12 +53,13 @@ public class Visiteur implements Serializable{
 	private String password="";
 	
 	
-	// tout le monde partage les memes horaires
+	// un visiteur peut etre inscrit a plusieurs activité
+	// et une activite a plusieurs visiteurs
 	@ManyToMany
 	//parametre de JoinTable inutiles si les tables et colonnes respectent le nommage par defaut
 	//@JoinTable(name = "oarcher_visiteur_oarcher_activite", joinColumns = @JoinColumn(name = "visiteur_id") , inverseJoinColumns = @JoinColumn(name = "activite_id") )
 	@JoinTable
-	private Set<Activite> activite = new HashSet<Activite>();
+	private Set<Activite> activites = new HashSet<Activite>();
 
 	
 
@@ -86,12 +87,12 @@ public class Visiteur implements Serializable{
 		this.prenom = prenom;
 	}
 
-	public Set<Activite> getActivite() {
-		return activite;
+	public Set<Activite> getActivites() {
+		return activites;
 	}
 
-	public void setActivite(Set<Activite> activite) {
-		this.activite = activite;
+	public void setActivites(Set<Activite> activite) {
+		this.activites = activite;
 	}
 
 	

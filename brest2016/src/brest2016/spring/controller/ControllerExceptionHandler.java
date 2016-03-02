@@ -22,6 +22,9 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
+
 import javax.validation.*;
 
 import brest2016.spring.controller.ServerMessages;
@@ -49,7 +52,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
 	}
 
 	@ExceptionHandler(ConstraintViolationException.class)
-	protected ResponseEntity<ServerMessages> handleConstraintViolationException(ConstraintViolationException ex) {
+	protected ResponseEntity<Object> handleConstraintViolationException(ConstraintViolationException ex) {
 		ServerMessages serverMessages = new ServerMessages();
 		//List<String> errors = new ArrayList<String>();
 		for(ConstraintViolation<?> violation : ex.getConstraintViolations()) {
@@ -57,7 +60,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
 			serverMessages.add(new ServerMessage(error,"warning"));
             log.info(error);
         }
-		return new ResponseEntity<ServerMessages>(serverMessages, HttpStatus.BAD_REQUEST);
+		return new ResponseEntity<Object>(serverMessages, HttpStatus.BAD_REQUEST);
 	}
 
 	@Override
@@ -114,9 +117,11 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
 		return new ResponseEntity<ServerMessages>(serverMessages, HttpStatus.BAD_REQUEST);
 	}
 	
+
 //	@ExceptionHandler(Exception.class)
 //	protected void genericExceptionHandler(Exception exception){
 //		log.info("Exception generique" + exception.getClass().getName());
+//		 System.exit(1);
 //	}
 
 }

@@ -20,7 +20,7 @@ function factory(growl) {
 	var services = {
 			
 		// gestion générique des messages d'erreurs
-		showMessages : showMessages,
+		//showMessages : showMessages,
 		showMessage  : showMessage		
 		// retourne le restobject d'un élément  
 		//getRestobject : getRestobject
@@ -29,17 +29,17 @@ function factory(growl) {
 
 	return services;
 
-	function showMessages(response) {
-		console.log('showMessages full : ' + response);
-		// callback error sur promise http
-		angular.forEach(response.data.errors, function(error) {
-			//growl.addWarnMessage(error);
-			showMessage(error)
-			console.log(error);
-		});
-	}
+//	function showMessages(response) {
+//		console.log('showMessages full : ' + response);
+//		// callback error sur promise http
+//		angular.forEach(response.data.errors, function(error) {
+//			//growl.addWarnMessage(error);
+//			showMessage(error);
+//			console.log(error);
+//		});
+//	}
 
-	function showMessage(message){
+	function showMessage(message,type){
 		console.log(message);
 //		$mdToast.show(
 //			      $mdToast.simple()
@@ -47,7 +47,8 @@ function factory(growl) {
 //			        .position("bottom right")
 //			        .hideDelay(3000)
 //			    );
-		growl.info(message, {ttl: 10000}) ;
+		if(!type){type="info"}
+		growl[type](message, {ttl: 10000}) ;
 	}
 
 }
