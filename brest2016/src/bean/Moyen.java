@@ -20,6 +20,11 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
+import javax.persistence.PostLoad;
+import javax.persistence.PostPersist;
+import javax.persistence.PostUpdate;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 
 /**
@@ -41,7 +46,7 @@ public class Moyen implements Serializable {
 	private String nom;
 	
 	// http://stackoverflow.com/questions/30464782/how-to-maintain-bi-directional-relationships-with-spring-data-rest-and-jpa
-	@OneToMany( cascade = CascadeType.ALL, mappedBy="moyen")
+	@OneToMany( mappedBy="moyen")
 	//@JoinTable(name="oarcher_activite_oarcher_moyen", joinColumns = @JoinColumn(name = "moyen_id") , inverseJoinColumns = @JoinColumn(name = "activite_id"))
 	//@OneToMany( cascade = CascadeType.ALL)
 	//@JoinTable(name="oarcher_activite_oarcher_moyen", joinColumns = @JoinColumn(name = "moyen_id") , inverseJoinColumns = @JoinColumn(name = "activite_id"))
@@ -60,12 +65,12 @@ public class Moyen implements Serializable {
 		return nom;
 	}
 
+	//@OneToMany( fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="moyen")
 	public Set<Activite> getActivite() {
 		return activite;
 	}
-
+	
 	public void setActivite(Set<Activite> activite) {
-		System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!on declare des activite dans moyen !!!!!!!!!!!!!!!!!!!!!");
 		this.activite = activite;
 	}
 
@@ -73,8 +78,4 @@ public class Moyen implements Serializable {
 		this.nom = nom;
 	}
 
-
-	
-	
-	
 }

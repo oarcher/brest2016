@@ -35,6 +35,7 @@
 						center : '',
 						right : 'today prev,next'
 					},
+					events : refreshEvents(this),
 					eventRender : eventRender
 
 				}
@@ -58,11 +59,12 @@
 			// eventReceive : eventReceive,
 			fullCalendar : fullCalendar
 		}
-		
+
 		/**
-		 * setConfig permet d'enrichir l'objet Brest2016Calendar avec des actions et des parmetres specifiques.
+		 * setConfig permet d'enrichir l'objet Brest2016Calendar avec des
+		 * actions et des parmetres specifiques.
 		 */
-		function setConfig(config){
+		function setConfig(config) {
 			$.extend(true, this, config);
 		}
 
@@ -159,7 +161,7 @@
 					this.config.calendar[key] = value;
 				} else {
 					$.extend(this.config.calendar, key); // key est en fait
-															// un objet
+					// un objet
 				}
 			}
 
@@ -177,6 +179,28 @@
 			}
 		}
 
+		/**
+		 * refreshEvents cette fonction est appelée a chaque rafraichissement du
+		 * calendrier, et est chargée de renvoyer la liste des events a afficher
+		 * voir http://fullcalendar.io/docs/event_data/events_function/
+		 */
+		function refreshEvents(self) {
+			// on a besoin de self=this a l'interireur de events
+			// sans faire de bind, car event a son popre this,
+			// d'ou ce wrapper
+			function events(start, end, timezone, callback) {
+				var events_ok = [];
+				self.events.forEach(function(event) {
+					if (event.id) {
+						events_ok.push(event);
+					}
+				});
+				callback(events_ok); // appel du callback fullcalendar
+			}
+			return events;
+		}
+		
+		
 		return Brest2016Calendar;
 
 	})

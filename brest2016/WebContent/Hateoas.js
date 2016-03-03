@@ -71,10 +71,9 @@
 						lst.push(element);
 					});
 					Brest2016Factory.showMessage(lst.length + ' ' + self.restObject + ' récupéré(s) du serveur');
-					if (callback) {
-						callback(lst)
-					}
-					;
+
+					typeof callback === 'function' && callback(lst);
+
 				});
 			});
 			self.list = lst;
@@ -95,6 +94,7 @@
 			var self = this;
 			console.log('create ' + JSON.stringify(element) + ' dans ' + self.restObject);
 			var url = apiurl + self.restObject;
+			console.log("curl -i -X POST -H 'Content-Type:application/json' -d '" + JSON.stringify(element) +  "'  " + url);
 
 			// for ( var field in element) {
 			// if (element.hasOwnProperty(field)) {
@@ -113,13 +113,11 @@
 					}
 				}
 				Brest2016Factory.showMessage(self.restObject + ' créé!');
-				if (callbackok) {
-					callbackok(created);
-				}
+				typeof callbackok === 'function' && callbackok(created);
 			}, function(error) {
-				if (callbacknok) {
-					callbacknok(error);
-				}
+				console.log('type ' + typeof callbacknok);
+				typeof callbacknok === 'function' && callbacknok(error);
+
 			});
 			return copy_element;
 
@@ -128,7 +126,7 @@
 		/**
 		 * update(element) mise a jour de l'element , sans modifier sont id
 		 */
-		function update(element) {
+		function update(element, callbackok, callbacknok) {
 			var self = this;
 			console.log('update ' + JSON.stringify(element) + ' dans ' + self.restObject);
 			var url = getSelfHref(element);
@@ -139,7 +137,10 @@
 				}
 			}).update(element, function(updated) {
 				Brest2016Factory.showMessage(self.restObject + ' mis a jour!');
-
+				typeof callbackok === 'function' && callbackok(updated);
+			}, function(error) {
+				alert(error);
+				typeof callbacknok === 'function' && callbacknok(error);
 			});
 		}
 
@@ -163,7 +164,7 @@
 				console.log(' retrait index ' + index);
 				self.list.splice(index, 1);
 				Brest2016Factory.showMessage(self.restObject + ' supprimé!');
-				callback(removed);
+				typeof callback === 'function' && callback(removed);
 			});
 		}
 
@@ -252,7 +253,7 @@
 			var lst = [];
 			console.log('curl ' + hrefRelation);
 			$resource(hrefRelation, {}).get(function(response) {
-				callback(response);
+				typeof callback === 'function' && callback(response);
 			});
 		}
 
@@ -276,9 +277,9 @@
 						console.log('pas _embeddedItems');
 						lst.push(processedResponse);
 					}
-					if (callback) {
-						callback(lst)
-					}
+
+					typeof callback === 'function' && callback(lst);
+
 				});
 			});
 			return lst; // sera resolu plus tard par la promise
@@ -312,7 +313,7 @@
 						}
 					}
 				});
-				callback(lst);
+				typeof callback === 'function' && callback(lst);
 			});
 			return lst; // sera rempli plus tard par la promise
 
@@ -355,7 +356,7 @@
 				}
 			}).post(hrefOtherElement, function(success) {
 				Brest2016Factory.showMessage("Relation créée " + message);
-				callback();
+				typeof callback === 'function' && callback();
 			}, function(error) {
 				Brest2016Factory.showMessage("Erreur à la création de la relation " + message + " : " + JSON.stringify(error), "error");
 			});
