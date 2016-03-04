@@ -68,9 +68,14 @@ public class Activite implements Serializable {
 	@DateTimeFormat
 	@DateActiviteValide
 	private Date datefin;
+	// voir http://stackoverflow.com/questions/28553555/how-to-post-new-nested-entities-using-spring-data-rest
+	// pour le optional=false
+	// pour creer une activite liée a un moyen en un coup : curl-i -X POST -H 'Content-Type:application/json' -d '{"lieu":"lieu par defaut", "moyen" : "http://localhost:8080/brest2016/rest/moyens/7" , "datedebut":"2016-07-14T09:00:00","datefin":"2016-07-14T11:00:00"}'  http://localhost:8080/brest2016/rest/activites
 
-	@ManyToOne  // ALL a l'air d'effacer moyen quand toutes les activites sont supprimées ( cascade=CascadeType.ALL ) //, fetch = FetchType.EAGER)
+	//@ManyToOne
+	@ManyToOne(optional=false)  // ALL a l'air d'effacer moyen quand toutes les activites sont supprimées ( cascade=CascadeType.ALL ) //, fetch = FetchType.EAGER)
 	@JoinColumn(name = "moyen_id")
+	@NotNull
 	// @JoinTable(name="oarcher_activite_oarcher_moyen", joinColumns =
 	// @JoinColumn(name = "activite_id") , inverseJoinColumns = @JoinColumn(name
 	// = "moyen_id"))

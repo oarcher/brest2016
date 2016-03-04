@@ -53,20 +53,18 @@ function calendarActivitesActions(calendar, activitesObj) {
 
 	/**
 	 * appelé par le drop d'un moyen sur le calendrier moyen est un restObject
-	 * auquel fullCalendar a ajouté les fields start et end (date de debut et
-	 * fin) voir http://fullcalendar.io/docs/dropping/eventReceive/
+	 * 'moyen' auquel fullCalendar a ajouté les fields start et end (date de
+	 * debut et fin) voir http://fullcalendar.io/docs/dropping/eventReceive/
 	 */
 	function moyenToEventActivite(moyen) {
 		activitesObj.create({
 			lieu : 'lieu par defaut',
 			datedebut : moyen.start,
 			datefin : moyen.end,
+			moyen : moyen._links.self.href
 		}, function(activite) {
-			activitesObj.addRelation(activite, moyen, function(ok) {
-				addActiviteToCalendar(activite);
-			});
-		},function(error){
-			alert(error);
+
+			addActiviteToCalendar(activite);
 		});
 	}
 	;
@@ -104,12 +102,10 @@ function calendarActivitesActions(calendar, activitesObj) {
 		event.original.datedebut = event.start.format();
 		event.original.datefin = event.end.format();
 		activitesObj.update(event.original, null, function(error) {
-			alert("Erreur au resize/move de l'evenement : " + error);
 			revertFunc();
 		});
 
 	}
-	
 
 	return actions;
 }

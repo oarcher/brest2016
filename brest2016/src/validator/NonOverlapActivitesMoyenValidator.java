@@ -26,35 +26,36 @@ import bean.Moyen;
 
 public class NonOverlapActivitesMoyenValidator implements ConstraintValidator<NonOverlapActivitesMoyen, Activite> {
 
-
-
 	@Override
 	public void initialize(NonOverlapActivitesMoyen paramA) {
-		
+
 	}
 
 	@Override
 	public boolean isValid(Activite activite, ConstraintValidatorContext ctx) throws ConstraintViolationException {
-		System.out.println("NonOverlapActivitesMoyenValidator pour activité" + activite.getId());
+		System.out
+				.println("NonOverlapActivitesMoyenValidator pour activité" + activite + " (" + activite.getId() + ")");
 		Moyen moyen = activite.getMoyen();
 		if (moyen != null) {
 			for (Activite activite_soeur : moyen.getActivite()) {
-				boolean valid = true;
-				if (activite.getDatefin().after(activite_soeur.getDatefin())
-						&& activite.getDatedebut().before(activite_soeur.getDatefin())) {
-					valid = false;
-				}
-				if (activite.getDatedebut().after(activite_soeur.getDatedebut())
-						&& activite.getDatedebut().before(activite_soeur.getDatefin())) {
-					valid = false;
-				}
-				if (!valid) {
-					ctx.disableDefaultConstraintViolation();
-					ctx.buildConstraintViolationWithTemplate(
-							"L'horaire est déja pris")
-							.addConstraintViolation();
-					// .addConstraintViolation();
-					return false;
+				if (activite_soeur.getId() != activite.getId()) {
+					System.out.println("NonOverlapActivitesMoyenValidator : verification horaire avec " + activite_soeur
+							+ " (" + activite_soeur.getId() + ")");
+					boolean valid = true;
+					if (activite.getDatefin().after(activite_soeur.getDatedebut())
+							&& activite.getDatedebut().before(activite_soeur.getDatefin())) {
+						valid = false;
+					}
+					if (activite.getDatedebut().after(activite_soeur.getDatedebut())
+							&& activite.getDatedebut().before(activite_soeur.getDatefin())) {
+						valid = false;
+					}
+					if (!valid) {
+						ctx.disableDefaultConstraintViolation();
+						ctx.buildConstraintViolationWithTemplate("L'horaire doit être libre").addConstraintViolation();
+						// .addConstraintViolation();
+						return false;
+					}
 				}
 			}
 		} else {
