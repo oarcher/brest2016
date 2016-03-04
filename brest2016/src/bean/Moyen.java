@@ -27,6 +27,8 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 
+import validator.NonOverlapActivitesMoyen;
+
 /**
  * @author oarcher
  *
@@ -50,6 +52,7 @@ public class Moyen implements Serializable {
 	//@JoinTable(name="oarcher_activite_oarcher_moyen", joinColumns = @JoinColumn(name = "moyen_id") , inverseJoinColumns = @JoinColumn(name = "activite_id"))
 	//@OneToMany( cascade = CascadeType.ALL)
 	//@JoinTable(name="oarcher_activite_oarcher_moyen", joinColumns = @JoinColumn(name = "moyen_id") , inverseJoinColumns = @JoinColumn(name = "activite_id"))
+	// voir @Getter @Setter http://stackoverflow.com/questions/34754992/how-to-update-a-manytoone-relationship-with-spring-data-rest
 	private Set<Activite> activite = new HashSet<Activite>();
 
 	public Long getId() {
@@ -76,6 +79,20 @@ public class Moyen implements Serializable {
 
 	public void setNom(String nom) {
 		this.nom = nom;
+	}
+	
+	@Override
+	public String toString(){
+		return nom;
+		
+	}
+	
+	@PreUpdate
+	private void preUpdate() {
+		for (Activite act : activite) {
+			System.out.println("************ Moyen activite : " + act);
+		}
+		
 	}
 
 }

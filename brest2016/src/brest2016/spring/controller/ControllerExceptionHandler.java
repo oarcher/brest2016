@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import org.springframework.transaction.TransactionSystemException;
 
 import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
 
@@ -61,6 +62,22 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
             log.info(error);
         }
 		return new ResponseEntity<Object>(serverMessages, HttpStatus.BAD_REQUEST);
+	}
+	
+	// lors d'une validation par ConstraintValidator, ConstraintViolationException
+	// est encapsulé dans TransactionSystemException
+	@ExceptionHandler(TransactionSystemException.class)
+	protected ResponseEntity<Object> handleTransactionSystemException(TransactionSystemException ex) throws Throwable{
+		ServerMessages serverMessages = new ServerMessages();
+		Throwable cause = ex.getRootCause();
+		System.out.println("*********** catch *****" + cause.getClass());
+		if(cause instanceof ConstraintViolationException){
+			System.out.println("*********** cool ");
+			
+			return handleConstraintViolationException( (ConstraintViolationException)cause);
+		} else {
+			throw cause;
+		}
 	}
 
 	@Override

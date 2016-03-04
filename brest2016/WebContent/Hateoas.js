@@ -357,8 +357,6 @@
 			}).post(hrefOtherElement, function(success) {
 				Brest2016Factory.showMessage("Relation créée " + message);
 				typeof callback === 'function' && callback();
-			}, function(error) {
-				Brest2016Factory.showMessage("Erreur à la création de la relation " + message + " : " + JSON.stringify(error), "error");
 			});
 		}
 
