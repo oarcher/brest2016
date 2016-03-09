@@ -3,22 +3,15 @@
  */
 package brest2016.spring.init;
 
-import java.net.URI;
-
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
-import org.springframework.beans.factory.annotation.Autowired;
-//import org.apache.tomcat.jdbc.pool.DataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
-import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
-import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -40,8 +33,8 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @EnableJpaRepositories("brest2016.spring.data")  // les data repository a scaner
 
 @Import(RepositoryRestMvcConfiguration.class) // spring data rest
-												// http://docs.spring.io/spring-data/rest/docs/2.4.2.RELEASE/reference/html/
-public class WebAppConfig {
+//@Import({SecurityConfig.class})											// http://docs.spring.io/spring-data/rest/docs/2.4.2.RELEASE/reference/html/
+public class RepositoryConfig {
 	// Le serveur est RESTFULL, les vue ne sont pas gérées pour l'instant
 	// @Bean
 	// public UrlBasedViewResolver initUrlBasedViewResolver() {
@@ -56,9 +49,9 @@ public class WebAppConfig {
 
 	// remplace persitence.xml
 	// TODO application.property brest2016/src/main/resources
-	// @Bean(name = "dataSource")
-	// public DataSource getDataSource() {
-	// BasicDataSource dataSource = new BasicDataSource();
+	// @Bean
+	// public DataSource dataSource() {
+	// DataSource dataSource = new DataSource();
 	// dataSource.setDriverClassName("com.mysql.jdbc.Driver");
 	// dataSource.setUrl("jdbc:mysql://localhost:3306/test");
 	// dataSource.setUsername("test");
@@ -66,6 +59,7 @@ public class WebAppConfig {
 	//
 	// return dataSource;
 	// }
+
 
 //	@Bean   // spring 2.4
 //	public RepositoryRestConfigurer repositoryRestConfigurer() {

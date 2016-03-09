@@ -8,7 +8,7 @@
  * @param calendar :
  *            un objet de type brest2016Calendar
  * @param activitesObj :
- *            un objet de type Hateoas
+ *            est une instance 'activite' de  Hateoas
  * @returns un objet destiné a etre injecté dans un calendrier par
  *          brest2016.setConfig
  */
@@ -42,8 +42,14 @@ function calendarActivitesActions(calendar, activitesObj) {
 		event.start = activite.datedebut;
 		event.end = activite.datefin;
 		event.original = activite;
+		// activitesObj.getRelation(activite, "moyen", function(moyen) {
+		// // console.log('recu :' + JSON.stringify(moyen));
+		// event.title = moyen.nom + " " + id;
+		// calendar.addEvent(event);
+		// });
 		activitesObj.getRelation(activite, "moyen", function(moyen) {
-			// console.log('recu :' + JSON.stringify(moyen));
+			//var moyen=lst_moyen[0];
+			//console.log('addActiviteToCalendar recu :' + JSON.stringify(moyen));
 			event.title = moyen.nom + " " + id;
 			calendar.addEvent(event);
 		});
@@ -63,7 +69,6 @@ function calendarActivitesActions(calendar, activitesObj) {
 			datefin : moyen.end,
 			moyen : moyen._links.self.href
 		}, function(activite) {
-
 			addActiviteToCalendar(activite);
 		});
 	}
@@ -97,7 +102,6 @@ function calendarActivitesActions(calendar, activitesObj) {
 		console.log('deplacement de ' + event.id + ' a ' + event.start.format());
 		console.log('event.end : ' + event.end.format());
 		console.log('event original' + JSON.stringify(event.original));
-		// alert(event.title + " was dropped on " + event.start.format());
 
 		event.original.datedebut = event.start.format();
 		event.original.datefin = event.end.format();

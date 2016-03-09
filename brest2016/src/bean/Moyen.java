@@ -48,7 +48,9 @@ public class Moyen implements Serializable {
 	private String nom;
 	
 	// http://stackoverflow.com/questions/30464782/how-to-maintain-bi-directional-relationships-with-spring-data-rest-and-jpa
-	@OneToMany( mappedBy="moyen")
+	// CascadeType.REMOVE pour supprimer les activites associées en cas de suppression d'un moyen
+	//@OneToMany( cascade = CascadeType.REMOVE ,mappedBy="moyen")
+	@OneToMany(mappedBy="moyen")
 	//@JoinTable(name="oarcher_activite_oarcher_moyen", joinColumns = @JoinColumn(name = "moyen_id") , inverseJoinColumns = @JoinColumn(name = "activite_id"))
 	//@OneToMany( cascade = CascadeType.ALL)
 	//@JoinTable(name="oarcher_activite_oarcher_moyen", joinColumns = @JoinColumn(name = "moyen_id") , inverseJoinColumns = @JoinColumn(name = "activite_id"))

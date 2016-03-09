@@ -31,45 +31,33 @@ import javax.validation.constraints.Size;
 
 @Entity
 @Table(name = "oarcher_visiteur")
-public class Visiteur implements Serializable{
- 
-    private static final long serialVersionUID = -7788619178798333712L;
+public class Visiteur implements Serializable {
+
+	private static final long serialVersionUID = -7788619178798333712L;
 
 	/**
 	 * 
 	 */
-    
-    @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    private Long id;
-    
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+
 	@NotBlank(message = "ne peux pas être vide")
-	private String nom="";
-	
-	
-	@NotBlank(message="ne peux pas être vide")
-	private String prenom="";
-	
-	private String password="";
-	
-	
+	private String login = "";
+
+	private String password = "";
+
 	// un visiteur peut etre inscrit a plusieurs activité
 	// et une activite a plusieurs visiteurs
 	@ManyToMany
-	//parametre de JoinTable inutiles si les tables et colonnes respectent le nommage par defaut
-	//@JoinTable(name = "oarcher_visiteur_oarcher_activite", joinColumns = @JoinColumn(name = "visiteur_id") , inverseJoinColumns = @JoinColumn(name = "activite_id") )
+	// parametre de JoinTable inutiles si les tables et colonnes respectent le
+	// nommage par defaut
+	// @JoinTable(name = "oarcher_visiteur_oarcher_activite", joinColumns =
+	// @JoinColumn(name = "visiteur_id") , inverseJoinColumns = @JoinColumn(name
+	// = "activite_id") )
 	@JoinTable
 	private Set<Activite> activites = new HashSet<Activite>();
-
-	
-
-	public String getNom() {
-		return nom;
-	}
-
-	public void setNom(String nom) {
-		this.nom = nom;
-	}
 
 	public Long getId() {
 		return id;
@@ -79,12 +67,22 @@ public class Visiteur implements Serializable{
 		this.id = id;
 	}
 
-	public String getPrenom() {
-		return prenom;
+	
+	
+	public String getLogin() {
+		return login;
 	}
 
-	public void setPrenom(String prenom) {
-		this.prenom = prenom;
+	public void setLogin(String login) {
+		this.login = login;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	public Set<Activite> getActivites() {
@@ -95,8 +93,4 @@ public class Visiteur implements Serializable{
 		this.activites = activite;
 	}
 
-	
-	
-	
-	
 }

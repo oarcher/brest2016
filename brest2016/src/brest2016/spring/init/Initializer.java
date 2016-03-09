@@ -3,57 +3,65 @@
  */
 package brest2016.spring.init;
 
-/**
- * @author oarcher
- *
- * Remplace le fichier web.xml
- * inspriré par http://www.javacodegeeks.com/2013/03/spring-mvc-creation-of-a-simple-controller-with-java-based-config.html
- * 
- */
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import javax.servlet.ServletRegistration.Dynamic;
-
 import org.apache.log4j.Logger;
-import org.springframework.web.WebApplicationInitializer;
-import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
-import org.springframework.web.servlet.DispatcherServlet;
-
-public class Initializer implements WebApplicationInitializer {
+import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
+public class Initializer extends
+AbstractAnnotationConfigDispatcherServletInitializer  {
 
 	final Logger log = Logger.getLogger(this.getClass());
 	
+//	@Override
+//	public void onStartup(ServletContext servletContext) throws ServletException {
+//		log.info("Initialisation Spring");
+//		System.out.println("Initialisation Spring");
+//		
+//
+//		AnnotationConfigWebApplicationContext ctx = new AnnotationConfigWebApplicationContext();
+//		ctx.register(WebAppConfig.class); // contient les resolvers
+//
+//		ctx.setServletContext(servletContext);
+//
+//		// mise en place de 2 dispatcher. En effet, certains seveurs web
+//		// refusent de produire du
+//		// json avec un mapping .htm, en provoquant une erreur 406 bad content
+//		ServletRegistration.Dynamic servlet = servletContext.addServlet("rest_dispatcher", new DispatcherServlet(ctx));
+//		servlet.addMapping("/rest/*");  // ca marche y compris pour /WebContent/*.html, sauf pour le browser hal
+//		servlet.setLoadOnStartup(1);
+//
+//	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer#getRootConfigClasses()
+	 */
 	@Override
-	public void onStartup(ServletContext servletContext) throws ServletException {
-		log.info("Initialisation Spring");
-		System.out.println("Initialisation Spring");
-		
+	protected Class<?>[] getRootConfigClasses() {
+		// TODO Auto-generated method stub
+		//return new Class[] { WebAppConfig.class,
+		//		RepositoryConfig.class};
+		return new Class[] { LoginConfig.class , RepositoryConfig.class };
+		//return null;
+	}
 
-		AnnotationConfigWebApplicationContext ctx = new AnnotationConfigWebApplicationContext();
-		ctx.register(WebAppConfig.class); // contient les resolvers
-
-		ctx.setServletContext(servletContext);
-
-		// mise en place de 2 dispatcher. En effet, certains seveurs web
-		// refusent de produire du
-		// json avec un mapping .htm, en provoquant une erreur 406 bad content
-		ServletRegistration.Dynamic servlet = servletContext.addServlet("rest_dispatcher", new DispatcherServlet(ctx));
-		servlet.addMapping("/rest/*");  // ca marche y compris pour /WebContent/*.html, sauf pour le browser hal
-		//servlet.addMapping("/"); // /WebContent/*.html doit etre déplacé dans src/ressources/static +config.setBasePath("/rest"); 
-		servlet.setLoadOnStartup(1);
-
-//		// RestFull , pas de dispatcher htm pour l'instant
-//		// Dynamic servlet1 = servletContext.addServlet("htm_dispatcher", new
-//		// DispatcherServlet(ctx));
-//		// servlet1.addMapping("*.htm");
-//		// servlet1.setLoadOnStartup(1);
-//		//
-
+	/* (non-Javadoc)
+	 * @see org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer#getServletConfigClasses()
+	 */
+	@Override
+	protected Class<?>[] getServletConfigClasses() {
+		// TODO Auto-generated method stub
 		
-		
-		
-		
+		return null;
+		//return new Class[] { RepositoryConfig.class };
+		//return new Class[] { WebAppConfig.class };
+	}
+
+	/* (non-Javadoc)
+	 * @see org.springframework.web.servlet.support.AbstractDispatcherServletInitializer#getServletMappings()
+	 */
+	@Override
+	protected String[] getServletMappings() {
+		// TODO Auto-generated method stub
+		return new String[] { "/rest/*" };
+		//return null;
 	}
 
 }

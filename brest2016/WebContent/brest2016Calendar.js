@@ -176,6 +176,8 @@
 
 			if (!event.id) { // Render seulement si valide
 				return false;
+			} else {
+				console.log('render ' + event.id);
 			}
 		}
 

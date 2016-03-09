@@ -174,6 +174,7 @@
 		 * nom sera un objet ayant la propriété subnom. le context (self) peut
 		 * etre passé de facon optionnel en parametre, dans le cas ou
 		 * getterSetter est appelé dans une promise qui a redefini le contexte.
+		 * FIXME a virer
 		 */
 
 		function getterSetter_old(nom, context) {
@@ -199,8 +200,10 @@
 		 * profile : retourne le profile d'un restObject, ou la liste des
 		 * restObject si restObject est vide. C'est en fait un simple get, avec
 		 * le nom du restObject precédé de 'profile' dans l'url
+		 * FIXME ne sert pas
 		 */
 		function profile() {
+			alert('profile est sensé ne plus servir!');
 			var self = this;
 			var urlprofile = apiurl.replace("/rest", "/rest/profile");
 
@@ -259,7 +262,8 @@
 
 		/**
 		 * getRelations retounre la liste des objets en relation avec un element
-		 * donné.
+		 * donné. C'est un tableau, pour pouvoir etre mis a jour de façon 
+		 * différé par la promise
 		 * 
 		 */
 		function getRelations(element, relation, callback) {
@@ -292,6 +296,7 @@
 		 */
 		function getDeepRelations(element, relation, callback) {
 			var self = this;
+			alert('getDeepRelations est sensé ne plus servir!');
 			console.log('getRelation ' + JSON.stringify(element) + " " + relation);
 			var hrefRelation = getRelationHref(element, relation);
 			console.log('getRelation ' + hrefRelation);
