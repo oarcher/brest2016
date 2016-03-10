@@ -5,6 +5,9 @@
 'use strict';
 
 /**
+ * fournit un object destiné a etre injecté dans un calendrier
+ * pour fournir  les fonctionnalitées d'admin
+ *  
  * @param calendar :
  *            un objet de type brest2016Calendar
  * @param activitesObj :
@@ -12,16 +15,16 @@
  * @returns un objet destiné a etre injecté dans un calendrier par
  *          brest2016.setConfig
  */
-function calendarActivitesActions(calendar, activitesObj) {
+function calendarAdmin(calendar, activitesObj) {
 
 	var actions = {
-		// fonctions supplémentaires
-		addActiviteToCalendar : addActiviteToCalendar,
-
 		// mise en place des callbacks fullCalendar
 		config : {
 			calendar : {
+				droppable : true,
+				editable : true,
 				// callBack fullCalendar
+				events : null, 
 				eventClick : removeEventActivite,
 				eventDrop : updateEventActivite,
 				eventReceive : moyenToEventActivite,
@@ -30,33 +33,7 @@ function calendarActivitesActions(calendar, activitesObj) {
 		}
 	}
 
-	/**
-	 * Ajout d'une activite sur le calendrier
-	 */
-
-	function addActiviteToCalendar(activite) {
-		var event = {};
-		var id = activitesObj.getIdFromElement(activite);
-		event.id = id;
-		event.title = "pas encore resolu par la promise";
-		event.start = activite.datedebut;
-		event.end = activite.datefin;
-		event.original = activite;
-		// activitesObj.getRelation(activite, "moyen", function(moyen) {
-		// // console.log('recu :' + JSON.stringify(moyen));
-		// event.title = moyen.nom + " " + id;
-		// calendar.addEvent(event);
-		// });
-		activitesObj.getRelation(activite, "moyen", function(moyen) {
-			//var moyen=lst_moyen[0];
-			//console.log('addActiviteToCalendar recu :' + JSON.stringify(moyen));
-			event.title = moyen.nom + " " + id;
-			calendar.addEvent(event);
-		});
-		return event;
-	}
-	;
-
+	
 	/**
 	 * appelé par le drop d'un moyen sur le calendrier moyen est un restObject
 	 * 'moyen' auquel fullCalendar a ajouté les fields start et end (date de
@@ -69,10 +46,10 @@ function calendarActivitesActions(calendar, activitesObj) {
 			datefin : moyen.end,
 			moyen : moyen._links.self.href
 		}, function(activite) {
-			addActiviteToCalendar(activite);
+			calendar.addActiviteToCalendar(activite);
 		});
 	}
-	;
+	
 
 	/**
 	 * suppression d'un event sur le calendrier c'est un callback eventClick de
@@ -91,7 +68,7 @@ function calendarActivitesActions(calendar, activitesObj) {
 			$(this).css('border-color', old_color);
 		}
 	}
-	;
+	
 
 	/**
 	 * deplacement ou resize d'un evenement sur le calendrier c'est un callback

@@ -3,6 +3,7 @@
  */
 package brest2016.spring.controller;
 
+import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -70,10 +73,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
 	protected ResponseEntity<Object> handleTransactionSystemException(TransactionSystemException ex) throws Throwable{
 		ServerMessages serverMessages = new ServerMessages();
 		Throwable cause = ex.getRootCause();
-		System.out.println("*********** catch *****" + cause.getClass());
 		if(cause instanceof ConstraintViolationException){
-			System.out.println("*********** cool ");
-			
 			return handleConstraintViolationException( (ConstraintViolationException)cause);
 		} else {
 			throw cause;
@@ -133,11 +133,39 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
 		
 		return new ResponseEntity<ServerMessages>(serverMessages, HttpStatus.BAD_REQUEST);
 	}
+
+	@ExceptionHandler(UsernameNotFoundException.class)
+	protected ResponseEntity<ServerMessages> handleUsernameNotFoundException(UsernameNotFoundException ex) {
+		ServerMessages serverMessages = new ServerMessages();
+		//return ResponseEntity.badRequest().body(ex.toString());
+		serverMessages.add(new ServerMessage(ex.toString(), "warning"));
+		
+		return new ResponseEntity<ServerMessages>(serverMessages, HttpStatus.NOT_FOUND);
+	}
 	
+	@ExceptionHandler(BadCredentialsException.class)
+	protected ResponseEntity<ServerMessages> handleBadCredentialsException(BadCredentialsException ex) {
+		System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+		ServerMessages serverMessages = new ServerMessages();
+		//return ResponseEntity.badRequest().body(ex.toString());
+		serverMessages.add(new ServerMessage(ex.toString(), "warning"));
+		
+		return new ResponseEntity<ServerMessages>(serverMessages, HttpStatus.NOT_FOUND);
+	}
+	
+	@ExceptionHandler(AccessDeniedException.class)
+	protected ResponseEntity<ServerMessages> handleAccessDeniedException(AccessDeniedException ex) {
+		System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+		ServerMessages serverMessages = new ServerMessages();
+		//return ResponseEntity.badRequest().body(ex.toString());
+		serverMessages.add(new ServerMessage(ex.toString(), "warning"));
+		
+		return new ResponseEntity<ServerMessages>(serverMessages, HttpStatus.FORBIDDEN);
+	}
 
 //	@ExceptionHandler(Exception.class)
 //	protected void genericExceptionHandler(Exception exception){
-//		log.info("Exception generique" + exception.getClass().getName());
+//		log.info("XXXXXXXXXXXXXXXXXXXXXXXXXX Exception generique" + exception.getClass().getName());
 //		 System.exit(1);
 //	}
 

@@ -10,6 +10,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 
@@ -28,18 +29,19 @@ public interface VisiteurRepository  extends CrudRepository<Visiteur, Long> {
 	 * @return
 	 */
 //	// seul admin peut lister tous les visiteurs
-//	@Override
-//	@PreAuthorize("hasRole('ROLE_ADMIN')")
-//	List<Visiteur> findAll();
+	@Override
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	List<Visiteur> findAll();
 	
 	// un visiteur a acces a son profile
-	//@Override
-	//@PostAuthorize("returnObject.login == principal.username or hasRole('ROLE_ADMIN')")
-	//Visiteur findOne(Long id);
+	@Override
+	@PostAuthorize("returnObject.login == principal.username or hasRole('ROLE_ADMIN')")
+	Visiteur findOne(Long id);
 	
-	List<Visiteur> findByLoginLike(@Param("login") String login);
+	//List<Visiteur> findByLoginLike(@Param("login") String login);
 	
-	//@PreAuthorize("hasRole('ROLE_ADMIN')")
+	// n'est pas exporté, sert a la validation du login
+	@RestResource(exported = false)
 	Visiteur findByLoginEquals(String login);
 	
 	

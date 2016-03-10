@@ -30,6 +30,9 @@ function brest2016Controller(Brest2016Factory, Hateoas, Brest2016Calendar) {
 	 * Le faire ici permet d'avoir une vue syntetique du controller, un peu a la
 	 * facon d'une interface.
 	 */
+	// login, logout
+	vm.login=login; //Brest2016Factory.login;
+	vm.logout=logout;
 
 	/**
 	 * Action a faire a l'initialisation du controller
@@ -37,11 +40,17 @@ function brest2016Controller(Brest2016Factory, Hateoas, Brest2016Calendar) {
 
 	vm.moyens = new Hateoas("moyens");
 
+	
+	
 	// gestion de la suppression d'un moyen
 	vm.suppression_moyen = suppression_moyen;
 	vm.getActivitesCount = getActivitesCount;
 
+	// la recupération de la liste des visiteurs n'est valable 
+	// que pour admin
 	vm.visiteurs = new Hateoas("visiteurs");
+	
+	
 	// les activites ne seront pas recupérées
 	// par le constructeur, c'est le calendrier qui le fera
 	vm.activites = new Hateoas("activites", false);
@@ -50,15 +59,17 @@ function brest2016Controller(Brest2016Factory, Hateoas, Brest2016Calendar) {
 	// associés, en particulier addActiviteToCalendar pour ajouter
 	// des activites
 	vm.calendar = new Brest2016Calendar("brest2016calendar");
-	vm.calendar.setConfig(calendarActivitesActions(vm.calendar, vm.activites));
-
+	//vm.calendar.setConfig(calendarAddActivites(vm.activites));
+	vm.calendar.addActiviteToCalendar=addActiviteToCalendar;
+	//vm.calendar.setConfig(calendarDefaults(vm.calendar));
+	
 	// on recupere les activites pour les
 	// mettre dans le calendrier
 	vm.activites.query(function(activites) {
 		console.log('Ajout dans le calendier de ' + activites.length + "activitées")
 		activites.forEach(function(activite) {
 			// calendar_actions.addActiviteToCalendar(activite);
-			vm.calendar.addActiviteToCalendar(activite);
+			vm.calendar.addActiviteToCalendar(vm.activites, activite);
 
 		});
 		console.log('activites ajoutée');
@@ -68,6 +79,54 @@ function brest2016Controller(Brest2016Factory, Hateoas, Brest2016Calendar) {
 	 * implementation des fonctions
 	 */
 
+	function addActiviteToCalendar(activitesObj, activite) {
+		var event = {};
+		//var id = activite.getId();
+		var id = activitesObj.getIdFromElement(activite);
+		event.id = id;
+		event.title = "pas encore resolu par la promise";
+		event.start = activite.datedebut;
+		event.end = activite.datefin;
+		event.original = activite;
+		// activitesObj.getRelation(activite, "moyen", function(moyen) {
+		// // console.log('recu :' + JSON.stringify(moyen));
+		// event.title = moyen.nom + " " + id;
+		// calendar.addEvent(event);
+		// });
+		var self=this;
+		activitesObj.getRelation(activite, "moyen", function(moyen) {
+		//activite.getRelation("moyen", function(moyen) {
+			//var moyen=lst_moyen[0];
+			//console.log('addActiviteToCalendar recu :' + JSON.stringify(moyen));
+			event.title = moyen.nom + " " + id;
+			self.addEvent(event);
+		});
+		return event;
+	}
+	
+	
+	function login(user,password){
+		return Brest2016Factory.login(user,password,function(status){
+			if(status.user == "admin"){
+				// injection des fonctions admin dans le calendrier
+				console.log("activation fonctionnalitées admin du calendrier");
+				vm.calendar.setConfig(calendarAdmin(vm.calendar, vm.activites));
+				//vm.calendar.fullCalendar({calendar : { editable : true, droppable : true}});
+				
+			}
+		});
+		
+	}
+	
+	function logout(){
+		// desactivation des fonctionnalités du calendrier
+		vm.calendar.setConfig(calendarDefaults(vm.calendar));
+		return Brest2016Factory.logout();
+		
+	}
+	
+	
+	
 	function getActivitesCount(moyen) {
 		var count = vm.moyens.getRelations(moyen, 'activite').length;
 		alert(count);
@@ -102,8 +161,6 @@ function brest2016Controller(Brest2016Factory, Hateoas, Brest2016Calendar) {
 		});
 	}
 	
-	function login(user,password){
-		
-	}
+
 
 }

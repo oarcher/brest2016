@@ -1,5 +1,10 @@
 /**
  * http://usejsdoc.org/
+ * 
+ * exemple d'auth spring security avec curl:
+ * curl -i -d username=admin -d password=admin --cookie-jar cookies.txt -L http://localhost:8080/brest2016/login
+ * curl -i -X POST -H 'Content-Type:application/json' -b cookies.txt -d '{"nom":"AAAAkkffkoo"}'  http://localhost:8080/brest2016/rest/moyens
+ * 
  */
 
 (function() {

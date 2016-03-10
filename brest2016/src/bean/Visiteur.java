@@ -4,6 +4,9 @@
 package bean;
 
 import org.hibernate.validator.constraints.NotBlank;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,6 +34,7 @@ import javax.validation.constraints.Size;
 
 @Entity
 @Table(name = "oarcher_visiteur")
+
 public class Visiteur implements Serializable {
 
 	private static final long serialVersionUID = -7788619178798333712L;
@@ -46,7 +50,8 @@ public class Visiteur implements Serializable {
 	@NotBlank(message = "ne peux pas être vide")
 	private String login = "";
 
-	private String password = "";
+	// le password n'est pas visible par JSON
+	private @JsonIgnore String password = "";
 
 	// un visiteur peut etre inscrit a plusieurs activité
 	// et une activite a plusieurs visiteurs

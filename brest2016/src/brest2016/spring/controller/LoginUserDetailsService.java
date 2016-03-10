@@ -21,12 +21,16 @@ import brest2016.spring.data.VisiteurRepository;
 
 /**
  * @author oarcher
+ * 
+ * Gestion des logins
+ * Les identifiants sont récupérés de  visiteurRepository
+ * admin est 'en dur'
  *
  */
 
 @EnableWebMvc
 @Service
-public class FakeUserDetailsService implements UserDetailsService {
+public class LoginUserDetailsService implements UserDetailsService {
 
 	@Autowired
 	private VisiteurRepository visiteurRepository;
@@ -37,7 +41,7 @@ public class FakeUserDetailsService implements UserDetailsService {
 		Visiteur visiteur = visiteurRepository.findByLoginEquals(username);
 		System.out.println("Securité : check  " + username);
 		if (visiteur == null) {
-			throw new UsernameNotFoundException("Username " + username + " not found");
+			throw new UsernameNotFoundException("Utilisateur " + username + " non trouvé!");
 		}
 		return new User(visiteur.getLogin(), visiteur.getPassword(), getGrantedAuthorities(username));
 	}

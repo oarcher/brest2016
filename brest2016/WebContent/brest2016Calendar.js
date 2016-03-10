@@ -27,8 +27,6 @@
 					firstDay : 3,
 					defaultDate : '2016-07-13',
 					height : 450,
-					editable : true,
-					droppable : true,
 					forceEventDuration : true,
 					header : {
 						left : 'title',
@@ -36,8 +34,7 @@
 						right : 'today prev,next'
 					},
 					events : refreshEvents(this),
-					eventRender : eventRender
-
+					eventRender : eventRender,
 				}
 
 			}
@@ -62,10 +59,16 @@
 
 		/**
 		 * setConfig permet d'enrichir l'objet Brest2016Calendar avec des
-		 * actions et des parmetres specifiques.
+		 * actions et des parmetres specifiques. config est un objet
+		 * ou une fonction qui retourne un objet. la variable 'calendar' est
+		 * accessible dans la fonction
 		 */
 		function setConfig(config) {
-			$.extend(true, this, config);
+			var calendar = this;
+			var objconfig={};
+			if(typeof config === 'function'){objconfig=config()} else { objconfig = config};
+			$.extend(true, this, objconfig);
+			console.log("setConfig editable:" + this.config.calendar.editable);
 		}
 
 		/**
@@ -173,7 +176,7 @@
 		 * _id)
 		 */
 		function eventRender(event, element) {
-
+			console.log('eventRender start');
 			if (!event.id) { // Render seulement si valide
 				return false;
 			} else {
@@ -191,9 +194,11 @@
 			// sans faire de bind, car event a son popre this,
 			// d'ou ce wrapper
 			function events(start, end, timezone, callback) {
+				console.log('refresh event start');
 				var events_ok = [];
 				self.events.forEach(function(event) {
 					if (event.id) {
+						console.log('refresh event : ' + event.id);
 						events_ok.push(event);
 					}
 				});
