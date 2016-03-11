@@ -31,11 +31,10 @@
 <!-- Les scipts du projet brest2016 -->
 <script type="text/javascript" src="brest2016Module.js"></script>
 <script type="text/javascript" src="brest2016Factory.js"></script>
-<script type="text/javascript" src="Hateoas.js"></script>
+<script type="text/javascript" src="RestRepo.js"></script>
+<script type="text/javascript" src="RestObject.js"></script>
 <script type="text/javascript" src="brest2016Calendar.js"></script>
-<script type="text/javascript" src="calendarAdmin.js"></script>
-<script type="text/javascript" src="calendarDefaults.js"></script>
-<script type="text/javascript" src="calendarAddActivites.js"></script>
+<script type="text/javascript" src="calendarActions.js"></script>
 <script type="text/javascript" src="brest2016Controller.js"></script>
 
 
@@ -53,7 +52,7 @@
 
 				<div class="col-md-2">
 
-					<div ng-show=!status.logged>
+					<div ng-show=!status.logged ng-init="user={login : 'admin', password : 'admin'}">
 						<form class="form-horizontal" role="form" name="form_login"
 							ng-submit="status=vm.login(user.login,user.password)">
 							<label class="control-label"> Login</label><input type="text"
@@ -86,8 +85,8 @@
 									class="btn btn-secondary"
 									ng-click="vm.suppression_moyen(moyen)"><span class="glyphicon glyphicon-trash"></span></button>
 								<div class="btn btn-default btn-sm" data-drag="true"
-									data-event="{{moyen}}" data-jqyoui-options="{revert: true}"
-									jqyoui-draggable remove-on-click>{{moyen.nom}}
+									data-event="{{moyen.json}}" data-jqyoui-options="{revert: true}"
+									jqyoui-draggable remove-on-click>{{moyen.json.nom}}
 									({{moyen.nb_activites}})</div>
 
 							</div>

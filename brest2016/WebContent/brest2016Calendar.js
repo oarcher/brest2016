@@ -5,6 +5,7 @@
 /**
  * voir http://fullcalendar.io/docs/
  * 
+ * 
  */
 (function() {
 	'use strict';
@@ -48,13 +49,13 @@
 		 */
 
 		Brest2016Calendar.prototype = {
-			setConfig : setConfig,
 			addEvent : addEvent,
 			removeEvent : removeEvent,
 			findEventById : findEventById,
+
 			getUiCalendarConfig : getUiCalendarConfig,
-			// eventReceive : eventReceive,
-			fullCalendar : fullCalendar
+			fullCalendar : fullCalendar,
+			setConfig : setConfig
 		}
 
 		/**
@@ -64,11 +65,11 @@
 		 * accessible dans la fonction
 		 */
 		function setConfig(config) {
-			var calendar = this;
-			var objconfig={};
-			if(typeof config === 'function'){objconfig=config()} else { objconfig = config};
-			$.extend(true, this, objconfig);
-			console.log("setConfig editable:" + this.config.calendar.editable);
+			//var calendar = this;
+			//var objconfig={};
+			//if(typeof config === 'function'){objconfig=config()} else { objconfig = config};
+			$.extend(true, this, config);
+			//console.log("setConfig editable:" + this.config.calendar.editable);
 		}
 
 		/**
@@ -176,11 +177,11 @@
 		 * _id)
 		 */
 		function eventRender(event, element) {
-			console.log('eventRender start');
+			//console.log('eventRender start');
 			if (!event.id) { // Render seulement si valide
 				return false;
 			} else {
-				console.log('render ' + event.id);
+				//console.log('render ' + event.id);
 			}
 		}
 
