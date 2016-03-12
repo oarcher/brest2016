@@ -19,6 +19,7 @@
 <script type="text/javascript" src="js/angular.js"></script>
 <script type="text/javascript" src="js/calendar.js"></script>
 <script type="text/javascript" src="js/fullcalendar.js"></script>
+<script type="text/javascript" src='js/fr.js'></script>
 <script type="text/javascript" src="js/gcal.js"></script>
 <script type="text/javascript" src="js/ui-bootstrap-tpls-1.1.2.js"></script>
 <script type="text/javascript" src="js/angular-resource.js"></script>
@@ -28,12 +29,13 @@
 <script type="text/javascript" src="js/angular-messages.js"></script>
 <script type="text/javascript" src="js/angular-dragdrop.js"></script>
 
-<!-- Les scipts du projet brest2016 -->
+<!-- Les scipts du projet brest2016 : auteur oarcher -->
 <script type="text/javascript" src="brest2016Module.js"></script>
 <script type="text/javascript" src="brest2016Factory.js"></script>
 <script type="text/javascript" src="RestRepo.js"></script>
 <script type="text/javascript" src="RestObject.js"></script>
-<script type="text/javascript" src="brest2016Calendar.js"></script>
+<!-- <script type="text/javascript" src="brest2016Calendar.js"></script> -->
+<script type="text/javascript" src="BaseCalendar.js"></script>
 <script type="text/javascript" src="calendarActions.js"></script>
 <script type="text/javascript" src="brest2016Controller.js"></script>
 
@@ -52,7 +54,8 @@
 
 				<div class="col-md-2">
 
-					<div ng-show=!status.logged ng-init="user={login : 'admin', password : 'admin'}">
+					<div ng-show=!status.logged
+						ng-init="user={login : 'user', password : 'user'}">
 						<form class="form-horizontal" role="form" name="form_login"
 							ng-submit="status=vm.login(user.login,user.password)">
 							<label class="control-label"> Login</label><input type="text"
@@ -68,9 +71,13 @@
 					</div>
 
 
+
+					<button class="btn btn-primary"
+						ng-click="vm.debugCalendar()">test</button>
+
 					<div ng-show="status.user == 'admin'">
 						<form class="form-horizontal" role="form" name="create_moyen_form"
-							ng-submit="moyen_a_creer = vm.moyens.create(moyen_a_creer)">
+							ng-submit="moyen_a_creer = vm.createMoyen(moyen_a_creer)">
 							<label class="control-label">Moyen</label> nom :<input
 								type="text" ng-model="moyen_a_creer.nom" />
 							<button class="btn btn-primary">Add</button>
@@ -80,17 +87,23 @@
 							<h4>liste des moyens</h4>
 							A deployer par drag & drop sur le calendrier
 
-							<div ng-repeat="moyen in vm.moyens.list">
+							<div ng-init="color='white'" ng-repeat="moyen in vm.moyens.list">
 								<button id="single-button" type="button"
-									class="btn btn-secondary"
-									ng-click="vm.suppression_moyen(moyen)"><span class="glyphicon glyphicon-trash"></span></button>
-								<div class="btn btn-default btn-sm" data-drag="true"
-									data-event="{{moyen.json}}" data-jqyoui-options="{revert: true}"
-									jqyoui-draggable remove-on-click>{{moyen.json.nom}}
+									class="btn btn-secondary" ng-click="vm.removeMoyen(moyen)">
+									<span class="glyphicon glyphicon-trash"></span>
+								</button>
+								<div data-jqyoui-options="{revert: true}" jqyoui-draggable
+									ng-style="{'background-color':'{{moyen.color}}'}"
+									remove-on-click data-event="{{moyen.json}}" data-drag="true"
+									class="btn btn-default">{{moyen.json.nom}}
 									({{moyen.nb_activites}})</div>
 
 							</div>
 						</div>
+					</div>
+					
+					<div ng-repeat="ev in vm.brest2016events">
+						<li>ev :{{ev.id}} {{ev.title}}</li>
 					</div>
 
 				</div>
@@ -100,91 +113,90 @@
 				<div class="col-md-10">
 
 
-
-					<div class="calendar" ui-calendar="vm.calendar.config.calendar"
-						ng-model="vm.calendar.eventSources"
-						calendar="{{vm.calendar.name}}"></div>
-
-
-<!-- 					<div ng-show="vm.activites.list.length"> -->
-<!-- 						liste des stands -->
-<!-- 						<div ng-repeat="activite in vm.activites.list"> -->
-<!-- 							<li>nom: {{activite.nom}} lieu: {{activite.lieu}} <span -->
-<!-- 									ng-click="vm.calendar.addActivite(activite)"> vers -->
-<!-- 									agenda </span> -->
-<!-- 							</li> -->
-<!-- 						</div> -->
-<!-- 					</div> -->
-
-<!-- 					<div> -->
-<!-- 						<form class="form-horizontal" role="form" -->
-<!-- 							name="create_activite_form" -->
-<!-- 							ng-submit="activite_a_creer = vm.activites.create(activite_a_creer)"> -->
-<!-- 							<label class="control-label">Activite</label> nom :<input -->
-<!-- 								type="text" ng-model="activite_a_creer.nom" minlength="2" -->
-<!-- 								maxlength="15" /> -->
-<!-- 							<div ng-messages="create_activite_form.nom.$error" -->
-<!-- 								ng-if='create_activite_form.nom.$dirty'> -->
-<!-- 								<div ng-message="minlength">au moins 2 caractères</div> -->
-<!-- 								<div ng-message="maxlength">au plus 15 caractères</div> -->
-<!-- 							</div> -->
-<!-- 							lieu : <input type="text" ng-model="activite_a_creer.lieu" /> -->
-<!-- 							debut : <input type="text" ng-model="activite_a_creer.datedebut" /> -->
-<!-- 							fin :<input type="text" ng-model="activite_a_creer.datefin" /> -->
-<!-- 							<button class="btn btn-primary">Add</button> -->
-<!-- 						</form> -->
-
-<!-- 						<div ng-show="vm.activites.list.length"> -->
-<!-- 							liste des stands -->
-<!-- 							<div ng-repeat="activite in vm.activites.list"> -->
-<!-- 								<li>nom: {{activite.nom}} lieu: {{activite.lieu}} <span -->
-<!-- 										remove-on-click ng-click="vm.activites.remove(activite)"> -->
-<!-- 										supprimer </span> 						<span ng-repeat="horaire in vm.horaires.list"> -->
-<!-- 															<label>{{horaire.plage}} <input type="checkbox" -->
-<!-- 																ng-model-options="{getterSetter: true}" 							ng-model="vm.stands.getterSetterRelation(stand, horaire)" /> -->
-<!-- 															</label> 					</span> -->
-<!-- 								</li> -->
-<!-- 							</div> -->
-<!-- 						</div> -->
-
-						<form class="form-horizontal" role="form"
-							ng-submit="visiteur_a_creer = vm.visiteurs.create(visiteur_a_creer)">
-							<label class="control-label">Visiteur</label> <input type="text"
-								ng-model="visiteur_a_creer.prenom" /> <input type="text"
-								ng-model="visiteur_a_creer.nom" /> <input type="text"
-								ng-model="visiteur_a_creer.password" />
-							<button class="btn btn-primary">Add</button>
-						</form>
+					<div class="calendar" ui-calendar="vm.calendar.config"
+						ng-model="vm.brest2016events"
+						calendar="{{vm.calendarName}}"></div>
 
 
+					<!-- 					<div ng-show="vm.activites.list.length"> -->
+					<!-- 						liste des stands -->
+					<!-- 						<div ng-repeat="activite in vm.activites.list"> -->
+					<!-- 							<li>nom: {{activite.nom}} lieu: {{activite.lieu}} <span -->
+					<!-- 									ng-click="vm.calendar.addActivite(activite)"> vers -->
+					<!-- 									agenda </span> -->
+					<!-- 							</li> -->
+					<!-- 						</div> -->
+					<!-- 					</div> -->
 
-						<div ng-show="vm.visiteurs.list.length">
-							liste des visiteurs
-							<div ng-repeat="visiteur in vm.visiteurs.list">
-								<li>{{visiteur.prenom}} {{visiteur.nom}} <span
-										remove-on-click ng-click="vm.visiteurs.remove(visiteur)">
-										supprimer </span> <span
-										ng_click="activites = vm.visiteurs.getRelations(visiteur, 'activite')">activite</span>
-									<div ng-repeat="activite in activites">{{activite}}</div>
-								</li>
-							</div>
+					<!-- 					<div> -->
+					<!-- 						<form class="form-horizontal" role="form" -->
+					<!-- 							name="create_activite_form" -->
+					<!-- 							ng-submit="activite_a_creer = vm.activites.create(activite_a_creer)"> -->
+					<!-- 							<label class="control-label">Activite</label> nom :<input -->
+					<!-- 								type="text" ng-model="activite_a_creer.nom" minlength="2" -->
+					<!-- 								maxlength="15" /> -->
+					<!-- 							<div ng-messages="create_activite_form.nom.$error" -->
+					<!-- 								ng-if='create_activite_form.nom.$dirty'> -->
+					<!-- 								<div ng-message="minlength">au moins 2 caractères</div> -->
+					<!-- 								<div ng-message="maxlength">au plus 15 caractères</div> -->
+					<!-- 							</div> -->
+					<!-- 							lieu : <input type="text" ng-model="activite_a_creer.lieu" /> -->
+					<!-- 							debut : <input type="text" ng-model="activite_a_creer.datedebut" /> -->
+					<!-- 							fin :<input type="text" ng-model="activite_a_creer.datefin" /> -->
+					<!-- 							<button class="btn btn-primary">Add</button> -->
+					<!-- 						</form> -->
+
+					<!-- 						<div ng-show="vm.activites.list.length"> -->
+					<!-- 							liste des stands -->
+					<!-- 							<div ng-repeat="activite in vm.activites.list"> -->
+					<!-- 								<li>nom: {{activite.nom}} lieu: {{activite.lieu}} <span -->
+					<!-- 										remove-on-click ng-click="vm.activites.remove(activite)"> -->
+					<!-- 										supprimer </span> 						<span ng-repeat="horaire in vm.horaires.list"> -->
+					<!-- 															<label>{{horaire.plage}} <input type="checkbox" -->
+					<!-- 																ng-model-options="{getterSetter: true}" 							ng-model="vm.stands.getterSetterRelation(stand, horaire)" /> -->
+					<!-- 															</label> 					</span> -->
+					<!-- 								</li> -->
+					<!-- 							</div> -->
+					<!-- 						</div> -->
+
+					<form class="form-horizontal" role="form"
+						ng-submit="visiteur_a_creer = vm.visiteurs.create(visiteur_a_creer)">
+						<label class="control-label">Visiteur</label> <input type="text"
+							ng-model="visiteur_a_creer.prenom" /> <input type="text"
+							ng-model="visiteur_a_creer.nom" /> <input type="text"
+							ng-model="visiteur_a_creer.password" />
+						<button class="btn btn-primary">Add</button>
+					</form>
+
+
+
+					<div ng-show="vm.visiteurs.list.length">
+						liste des visiteurs
+						<div ng-repeat="visiteur in vm.visiteurs.list">
+							<li>{{visiteur.prenom}} {{visiteur.nom}} <span
+									remove-on-click ng-click="vm.visiteurs.remove(visiteur)">
+									supprimer </span> <span
+									ng_click="activites = vm.visiteurs.getRelations(visiteur, 'activite')">activite</span>
+								<div ng-repeat="activite in activites">{{activite}}</div>
+							</li>
 						</div>
-
-
-
-						<form class="form-horizontal" role="form"
-							ng-submit="vm.visiteurs.addRelation(visiteur, activite)">
-							<select ng-model="visiteur"
-								ng-options="visiteur.prenom for visiteur in vm.visiteurs.list"></select>
-							<select ng-model="activite"
-								ng-options="activite for activite in vm.activites.list"></select>
-							</select>
-							<button class="btn btn-primary">Inscrire</button>
-						</form>
 					</div>
+
+
+
+					<form class="form-horizontal" role="form"
+						ng-submit="vm.visiteurs.addRelation(visiteur, activite)">
+						<select ng-model="visiteur"
+							ng-options="visiteur.prenom for visiteur in vm.visiteurs.list"></select>
+						<select ng-model="activite"
+							ng-options="activite for activite in vm.activites.list"></select>
+						</select>
+						<button class="btn btn-primary">Inscrire</button>
+					</form>
 				</div>
 			</div>
 		</div>
+	</div>
 	</div>
 </body>
 </html>

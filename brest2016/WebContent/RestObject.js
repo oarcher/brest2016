@@ -20,12 +20,12 @@
 		/**
 		 * Constructeur
 		 */
-		function RestObject(restJson,parent) {
-			console.log('constructeur RestObject');
+		function RestObject(restJson, parent) {
 			this.json = restJson;
-			this.parent=parent;
+			this.parent = parent;
 			this.id = this.getId();
-			//this=restJson;
+			//console.log('constructeur RestObject ' + parent.restRepo + " id:" + this.id);
+			// this=restJson;
 		}
 
 		/**
@@ -39,10 +39,11 @@
 			getRelationHref : getRelationHref,
 			update : update,
 			remove : remove,
-			getRelation : getRelation,
 			getRelations : getRelations,
 			addRelation : addRelation,
 			addOrRemoveRelation : addOrRemoveRelation,
+			_getRelation : _getRelation,
+
 		// getterSetterRelation : getterSetterRelation,
 		// dumpScope : dumpScope,
 		// getIdFromElement : getIdFromElement
@@ -62,7 +63,7 @@
 				}
 			}).update(self.json, function(updated) {
 				Brest2016Factory.showMessage(self.parent.restRepo + ' mis a jour!');
-				self.json=updated;
+				self.json = updated;
 				self.parent.update(self);
 				typeof callbackok === 'function' && callbackok(self);
 			}, function(error) {
@@ -76,37 +77,39 @@
 		 * complet.
 		 * 
 		 */
-		function remove(callback) {
+		function remove(callbackok,callbacknok) {
 			var self = this;
 			var self_url = this.getHref();
 			console.log('remove ' + JSON.stringify(this.json));
 			console.log('remove self_url' + JSON.stringify(self_url));
-			var id=this.getId();
+			console.log('on supprimera dans parent ' + self.parent.restRepo);
+			var id = this.id;
 			console.log('id: ' + id);
-			return $resource(self_url, {}).remove(function(removed) {
+			$resource(self_url, {}).remove(function(removed) {
+				console.log('suppression dans parent ' + self.parent.restRepo);
 				self.parent.remove(id);
-				Brest2016Factory.showMessage(self.restObject + ' supprimé!');
-				typeof callback === 'function' && callback(removed);
+				Brest2016Factory.showMessage(self.parent.restRepo + ' supprimé!');
+				typeof callbackok === 'function' && callbackok(removed);
+			},function(error){
+				typeof callbacknok === 'function' && callbacknok(error);
 			});
 		}
 
-
-
 		/**
-		 * recupere le contenu du lien (json) d'une relation. si il y a des
-		 * _embeddedItems, il seront retournés tel quel (pas de tableaux)
-		 * utiliser getRelations pour gerer les _embeddedItems, et le retour du
-		 * tableau. getRelation ne retourne rien, il faut passer par le callback
-		 * pour la reponse
+		 * recupere le contenu du lien (json) d'une relation passée en string.
+		 * si il y a des _embeddedItems, il seront retournés tel quel (pas de
+		 * tableaux) utiliser getRelations pour gerer les _embeddedItems, et le
+		 * retour du tableau. getRelation ne retourne rien, il faut passer par
+		 * le callback pour la reponse
 		 */
-		function getRelation(relation, callback) {
+		function _getRelation(relation, callback) {
 			var self = this;
 			// console.log('getRelation ' + JSON.stringify(element) + " " +
 			// relation);
 			var hrefRelation = this.getRelationHref(relation);
 			// console.log('getRelation ' + hrefRelation);
 			var lst = [];
-			console.log('curl ' + hrefRelation);
+			//console.log('curl ' + hrefRelation);
 			$resource(hrefRelation, {}).get(function(response) {
 				typeof callback === 'function' && callback(response);
 			});
@@ -114,43 +117,51 @@
 
 		/**
 		 * getRelations retourne la liste des objets en relation avec un element
-		 * donné (OneToMany). C'est un tableau, pour pouvoir etre mis a jour de façon
-		 * différé par la promise.
-		 * marche aussi avec ManyToOne, c'est un moyen pour avoir la relation en mode
-		 * différé par la promise sans utiliser le callback.
+		 * donné (OneToMany). C'est un tableau, pour pouvoir etre mis a jour de
+		 * façon différé par la promise. marche aussi avec ManyToOne, c'est un
+		 * moyen pour avoir la relation en mode différé par la promise sans
+		 * utiliser le callback. relationRepo est l'objet RestRepo dans lequel
+		 * se trouve la relation
 		 * 
 		 */
-		function getRelations(relation, callback) {
+		function getRelations(relationRepo, callback) {
+			var debug = 'getRelations pour ' + this.parent.restRepo + " vers  " + relationRepo.restRepo;
 			var lst = [];
-			//var element = this.json;
-			this.getRelation(relation, function(response) {
-				console.log('getRelations raw : ' + JSON.stringify(response));
-				SpringDataRestAdapter.process(response).then(function(processedResponse) {
-					console.log('getRelations : ' + JSON.stringify(processedResponse));
-					if (processedResponse._embeddedItems) {
-						angular.forEach(processedResponse._embeddedItems, function(element, key) {
-							console.log('query : ' + JSON.stringify(element));
-							lst.push(new RestObject(element));
-						});
-					} else {
-						console.log('pas _embeddedItems');
-						lst.push(new RestObject(processedResponse));
-					}
+			var self=this;
+			this.parent.getRelationName(relationRepo, function(relation) {
+				console.log(debug + " : " + relation);
+				self._getRelation(relation, function(response) {
+					//console.log('getRelations raw : ' + JSON.stringify(response));
+					SpringDataRestAdapter.process(response).then(function(processedResponse) {
+						//console.log('getRelations : ' + JSON.stringify(processedResponse));
+						if (processedResponse._embeddedItems) {
+							angular.forEach(processedResponse._embeddedItems, function(element, key) {
+								//console.log('query : ' + JSON.stringify(element));
+								var id = getIdFromJson(element);
+								lst.push(relationRepo.findById(id));
+							});
+							typeof callback === 'function' && callback(lst);
+						} else {
+							//console.log('pas _embeddedItems');
+							var id = getIdFromJson(processedResponse);
+							lst.push(relationRepo.findById(id));
+							typeof callback === 'function' && callback(lst[0]);
+						}
 
-					typeof callback === 'function' && callback(lst);
 
+					});
 				});
 			});
 			return lst; // sera resolu plus tard par la promise
 
 		}
 
-
 		/**
 		 * addRelation
 		 * 
 		 * @param relation :
-		 *            le nom de la relation sur laquelle il faut ajouter otherElement
+		 *            le nom de la relation sur laquelle il faut ajouter
+		 *            otherElement
 		 * @param otherElement :
 		 *            l'element a ajouter en relation le but est de poster l'url
 		 *            de l'element detination sur l'url de l'element source
@@ -171,7 +182,7 @@
 			var hrefRelation = this.getRelationHref(relation);
 			var restRepo = this.getRestRepo();
 			// console.log("hrefRelation : " + hrefRelation);
-			var message = "entre " + this.getRestRepo()  + " et " + otherElement.getRestRepo();
+			var message = "entre " + this.getRestRepo() + " et " + otherElement.getRestRepo();
 			console.log('curl -v -X PUT -H "Content-Type: text/uri-list" -d "' + otherElement.getHref + '" ' + hrefRelation);
 			$resource(hrefRelation, {}, {
 				post : {
@@ -187,14 +198,14 @@
 			});
 		}
 
-//		/**
-//		 * addRelations ajoute plusieurs relation d'un coup
-//		 */
-//		function addRelations(otherElements) {
-//			otherElements.forEach(function(otherElement) {
-//				addRelation(element, otherElement)
-//			});
-//		}
+		// /**
+		// * addRelations ajoute plusieurs relation d'un coup
+		// */
+		// function addRelations(otherElements) {
+		// otherElements.forEach(function(otherElement) {
+		// addRelation(element, otherElement)
+		// });
+		// }
 		/**
 		 * removeRelation element : l'element auquel il faut supprimer une
 		 * relation otherElement : l'element a supprimer le but est de recupere
@@ -203,12 +214,12 @@
 		 * $resource.remove
 		 */
 		function removeRelation(relation, otherElement) {
-			var element=this.json;
+			var element = this.json;
 			// console.log("removeRelation");
-			//var hrefOtherElement = otherElement.getHref;
-			//var otherRestObject = getRestObjectFromHref(hrefOtherElement);
-			//var idOtherElement = getIdFromHref(hrefOtherElement);
-			
+			// var hrefOtherElement = otherElement.getHref;
+			// var otherRestObject = getRestObjectFromHref(hrefOtherElement);
+			// var idOtherElement = getIdFromHref(hrefOtherElement);
+
 			var hrefRemove = this.getRelationHref(relation) + "/" + otherElement.getId();
 			// console.log('hrefRemove : ' + hrefRemove);
 			// var restObject = getRestObject(element);
@@ -227,7 +238,7 @@
 		function addOrRemoveRelation(relation, otherElement, bool) {
 			if (bool) {
 				console.log("addOrRemoveRelation : add");
-				this.addRelation(relation,otherElement);
+				this.addRelation(relation, otherElement);
 			} else {
 				console.log("addOrRemoveRelation : remove");
 				this.removeRelation(relation, otherElement);
@@ -313,14 +324,14 @@
 		// // self.scope.element[hrefElement].relation[hrefOtherElement]);
 		// return self.scope.element[hrefElement].relation[hrefOtherElement];
 		//
-		//					}
-		//				};
+		// }
+		// };
 		//
-		//			}
+		// }
 		//
-		//			return getterSetter;
+		// return getterSetter;
 		//
-		//		}
+		// }
 
 		/**
 		 * getHref retourne l'url self d'un element
@@ -333,11 +344,18 @@
 		 * getId retourne l'id d'un element
 		 */
 		function getId() {
-			if(jQuery.isEmptyObject(this.json)){
+			if (jQuery.isEmptyObject(this.json)) {
 				return null;
 			} else {
 				return getIdFromHref(this.getHref());
 			}
+		}
+
+		/**
+		 * retourne l'id d'un json (sans this)
+		 */
+		function getIdFromJson(json) {
+			return getIdFromHref(json._links.self.href);
 		}
 
 		/**
@@ -346,29 +364,29 @@
 		function getRestObject() {
 			return getRestObjectFromHref(this.getHref());
 		}
-		
+
 		/**
 		 * getRelationHref retourne l'url de relation d'un element. C'est la
 		 * propriété 'relation'.href de la propriete _links
 		 * 
 		 */
 		function getRelationHref(relation) {
-			console.log('getRelationHref ' + relation + " " + JSON.stringify(this.json));
+			// console.log('getRelationHref ' + relation + " " +
+			// JSON.stringify(this.json));
 			// if(!element._links.hasOwnProperty(relation)){
 			// relation=relation+"s";
 			// }
 			return this.json._links[relation].href;
 		}
-		
+
 		/**
-		 * getRepo retourne l'url du repository
-		 * C'est href sans l'id
+		 * getRepo retourne l'url du repository C'est href sans l'id
 		 * 
 		 */
-		function getRepo(){
+		function getRepo() {
 			return this.getHref().match(/(.*\/rest\/.*)\/\d+/)[1];
 		}
-		
+
 		/**
 		 * fonction privées
 		 */
@@ -389,9 +407,6 @@
 		function getIdFromHref(href) {
 			return href.match(/.*\/rest\/.*\/(\d+)/)[1];
 		}
-
-
-
 
 		return RestObject;
 

@@ -37,7 +37,7 @@ public class NonOverlapActivitesMoyenValidator implements ConstraintValidator<No
 				.println("NonOverlapActivitesMoyenValidator pour activité" + activite + " (" + activite.getId() + ")");
 		Moyen moyen = activite.getMoyen();
 		if (moyen != null) {
-			for (Activite activite_soeur : moyen.getActivite()) {
+			for (Activite activite_soeur : moyen.getActivites()) {
 				if (activite_soeur.getId() != activite.getId()) {
 					System.out.println("NonOverlapActivitesMoyenValidator : verification horaire avec " + activite_soeur
 							+ " (" + activite_soeur.getId() + ")");

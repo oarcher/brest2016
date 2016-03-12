@@ -55,7 +55,7 @@ public class Moyen implements Serializable {
 	//@OneToMany( cascade = CascadeType.ALL)
 	//@JoinTable(name="oarcher_activite_oarcher_moyen", joinColumns = @JoinColumn(name = "moyen_id") , inverseJoinColumns = @JoinColumn(name = "activite_id"))
 	// voir @Getter @Setter http://stackoverflow.com/questions/34754992/how-to-update-a-manytoone-relationship-with-spring-data-rest
-	private Set<Activite> activite = new HashSet<Activite>();
+	private Set<Activite> activites = new HashSet<Activite>();
 
 	public Long getId() {
 		return id;
@@ -71,12 +71,12 @@ public class Moyen implements Serializable {
 	}
 
 	//@OneToMany( fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="moyen")
-	public Set<Activite> getActivite() {
-		return activite;
+	public Set<Activite> getActivites() {
+		return activites;
 	}
 	
-	public void setActivite(Set<Activite> activite) {
-		this.activite = activite;
+	public void setActivite(Set<Activite> activites) {
+		this.activites = activites;
 	}
 
 	public void setNom(String nom) {
@@ -91,7 +91,7 @@ public class Moyen implements Serializable {
 	
 	@PreUpdate
 	private void preUpdate() {
-		for (Activite act : activite) {
+		for (Activite act : activites) {
 			System.out.println("************ Moyen activite : " + act);
 		}
 		

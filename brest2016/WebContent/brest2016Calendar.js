@@ -9,38 +9,48 @@
  */
 (function() {
 	'use strict';
-	angular.module('brest2016App').factory('Brest2016Calendar', function(uiCalendarConfig) {
+	angular.module('brest2016App').factory('Brest2016Calendar', function() {
 
 		console.log('brest2016Calendar init');
 
 		/**
 		 * Constructeur
 		 */
-		function Brest2016Calendar(name, config) {
-			console.log('constructeur brest2016Calendar :' + JSON.stringify(uiCalendarConfig));
-			this.name = name;
-			this.events = [];
-			this.eventSources = [ this.events ];
-			this.config = {
-				calendar : {
-
-					defaultView : 'agendaWeek',
-					firstDay : 3,
-					defaultDate : '2016-07-13',
-					height : 450,
-					forceEventDuration : true,
-					header : {
-						left : 'title',
-						center : '',
-						right : 'today prev,next'
-					},
-					events : refreshEvents(this),
-					eventRender : eventRender,
-				}
-
+		function Brest2016Calendar(name,uiCalendarConfig) {
+			console.log('constructeur brest2016Calendar');
+			var self=uiCalendarConfig.calendars[name];
+			self.name = name;
+			self.events = [];
+			//this.eventSources = [ this.events ],
+			self.actions={};
+			self.calendar = {
+				lang : 'fr',
+				allDaySlot : false,
+				defaultView : 'agendaWeek',
+				firstDay : 3,
+				defaultDate : '2016-07-13',
+				height : 450,
+				forceEventDuration : true,
+				header : {
+					left : 'title',
+					center : '',
+					right : ''
+				},
+				events : refreshEvents(self),
+				//events : _refreshEvents,
+				eventRender : eventRender,
 			}
-			// injections de la config
-			$.extend(true, this, config);
+			// this.fullCalendar( 'removeEventSource', this.events );
+
+			// this.config._calendar=$.extend(true,{},this.config.calendar); //
+			// copie
+
+			// injections dans uiCalendarConfig
+			//$.extend(true, uiCalendarConfig.calendars[name] , this);
+			//$.extend(true, this, uiCalendarConfig.calendars[name])
+			//var self = uiCalendarConfig.calendars[name];
+			self.fullCalendar('addEventSource', self.events );
+			//delete uiCalendarConfig.calendars[name];
 		}
 
 		/**
@@ -52,24 +62,42 @@
 			addEvent : addEvent,
 			removeEvent : removeEvent,
 			findEventById : findEventById,
-
-			getUiCalendarConfig : getUiCalendarConfig,
-			fullCalendar : fullCalendar,
+			findIndexById : findIndexById,
+			//getUiCalendarConfig : getUiCalendarConfig,
+			//fullCalendar : fullCalendar,
 			setConfig : setConfig
 		}
 
 		/**
 		 * setConfig permet d'enrichir l'objet Brest2016Calendar avec des
-		 * actions et des parmetres specifiques. config est un objet
-		 * ou une fonction qui retourne un objet. la variable 'calendar' est
-		 * accessible dans la fonction
+		 * actions et des parmetres specifiques. config est un objet ou une
+		 * fonction qui retourne un objet. la variable 'calendar' est accessible
+		 * dans la fonction
 		 */
 		function setConfig(config) {
-			//var calendar = this;
-			//var objconfig={};
-			//if(typeof config === 'function'){objconfig=config()} else { objconfig = config};
-			$.extend(true, this, config);
-			//console.log("setConfig editable:" + this.config.calendar.editable);
+			// var calendar = this;
+			// var objconfig={};
+			// if(typeof config === 'function'){objconfig=config()} else {
+			// objconfig = config};
+			$.extend(true, self.calendar, config);
+			// attention $extend ne copie pas les null ou undefined. On efface
+			// les clées manuellement.
+			for ( var key in config) {
+				console.log("setConfig calendar key: " + key);
+				if (config.hasOwnProperty(key)) {
+					if (config[key] === undefined || config[key] === null) {
+						if (slef.calendar[key] !== undefined || self.calendar[key] !== null) {
+							console.log("delete. etait: " + typeof self.calendar[key]);
+							delete self.calendar[key];
+							console.log("delete. maintenant: " + typeof self.calendar[key]);
+						} else {
+							console.log("deja null");
+						}
+					}
+				}
+			}
+			// console.log("setConfig editable:" +
+			// this.config.calendar.editable);
 		}
 
 		/**
@@ -77,68 +105,68 @@
 		 */
 		function addEvent(event) {
 			console.log('addEvent : ' + JSON.stringify(event.id));
-			this.events.push(event);
-			// a cause de la strategie 'events' de fullCalendar
-			// on prend garde a ne pas ajouter l'élément plusieurs fois
-			// if($.grep(this.events, function(ev){ return ev.id ===
-			// event.id;
-			// }).length == 0){
-			// this.events.push(event);
-			// }
+			// in verifie que l'event n'existe pas deja
+			var index = this.findIndexById(event);
+			if (index >= 0) {
+				console.log('remplacé');
+				this.events[index] = event;
+			} else {
+				console.log('ajouté');
+				this.events.push(event);
+			}
+			// FIXME Temporaire
+			if (event.original.json.datedebut !== event.start) {
+				alert(event.original.json.datedebut + " !==" + event.start);
+				console.log(JSON.stringify(event.original.json), null, 2);
+			}
 		}
 
 		function removeEvent(event) {
 			console.log("removeEvent id " + event.id);
 			// console.log("removeEvent length avant : " +
 			// this.events.length);
-			var index = this.events.map(function(el) {
-				return el.id;
-			}).indexOf(event.id);
-			// console.log('index ' + index);
-			this.events.splice(index, 1);
-			// console.log("removeEvent remove id " + removed.id);
-			// for (var i = 0; i < index.length; i++) {
-			// this.events.splice(index[i], 1);
-			// }
-			//			
-			console.log("removeEvent length apres : " + this.events.length);
+			var index = this.findIndexById(event.id);
+			console.log('remove index ' + index);
+			console.log('remove json ' + JSON.stringify(self.events[index].original.json));
+			self.events.splice(index, 1);
+			// console.log("removeEvent length apres : " + this.events.length);
+			// this.fullCalendar('removeEvents', event.id);
 		}
 
+		/**
+		 * retourne l'element de this.events correspondant a l'id
+		 */
 		function findEventById(id) {
-			// FIXME a nettoyer du if
-			// console.log("findEventById " + id);
-			var event = false;
-			var select = $.grep(this.events, function(ev) {
-				return ev.id == id;
-			});
-			// event = select[0]; return event
-			if (select.length == 1) {
-				event = select[0];
-				// console.log("trouvé findEventById a l'index " + select[0]
-				// + "
-				// " + JSON.stringify(event));
-			}
-			if (select.length > 1) {
-				alert("erreur, il y a plusieurs events avec l'id " + id);
-				event = select[0];
+			var event = undefined;
+			var index = this.findIndexById(id);
+			if (index >= 0) {
+				event = self.events[index];
 			}
 			return event;
 		}
 
 		/**
+		 * retourne l'index de l'event dans this.events, par id
+		 */
+		function findIndexById(id) {
+			return self.events.map(function(el) {
+				return el.id;
+			}).indexOf(id);
+		}
+
+		/**
 		 * getUiCalendarConfig recuperation de l'objet fullcalendar
 		 */
-		function getUiCalendarConfig() {
+		function _getUiCalendarConfig() {
 			// il est a undefined tant que le calendrier n'est pas affiché sur
 			// la vue, et ui-calendar ne propose pas de callback
 			// voir https://github.com/angular-ui/ui-calendar/issues/195
-
-			if (this.name in uiCalendarConfig.calendars) {
-				// console.log('uiCalendarConfig.calendars.' + this.name + "
-				// existe!");
-				return uiCalendarConfig.calendars[this.name];
+			console.log('check getUiCalendarConfig');
+			if (self.name in uiCalendarConfig.calendars) {
+				console.log('uiCalendarConfig.calendars.' + self.name + "existe!");
+				return uiCalendarConfig.calendars[self.name];
 			} else {
-				console.log('uiCalendarConfig.calendars.' + this.name + " n'existe pas encore");
+				console.log('uiCalendarConfig.calendars.' + self.name + " n'existe pas encore");
 				Object.keys(uiCalendarConfig.calendars).forEach(function(cal) {
 					console.log('exist : ' + cal);
 
@@ -150,23 +178,18 @@
 		/**
 		 * fullCalendar wrapper vers la fonction fullCalendar qui permet
 		 * d'executer les actions fullCalendar voir
-		 * http://fullcalendar.io/docs/usage/
+		 * http://fullcalendar.io/docs/usage/ On contourne le bug
+		 * degetUiCalendarConfig par un appel récursif
 		 */
-		function fullCalendar(key, value) {
-			// FIXME utiliser arguments plutot que key,value
-			// si getUiCalendarConfig est undefined, on range
-			// les objets dans this.config.calendar, il seront executés ensuite.
-			if (this.getUiCalendarConfig()) {
+		function fullCalendar(args) {
+			console(error.error);
+			if (self.getUiCalendarConfig()) {
 				console.log("fullcalendar activé!");
-				this.getUiCalendarConfig().fullCalendar(arguments);
+				self.getUiCalendarConfig().fullCalendar(arguments);
 			} else {
-				console.log("fullcalendar pas encore fini d'initialiser " + key + " est mis dans l'objet config");
-				if (value) {
-					this.config.calendar[key] = value;
-				} else {
-					$.extend(this.config.calendar, key); // key est en fait
-					// un objet
-				}
+				//var self = this;
+				// console.log("fullcalendar pas encore fini d'initialiser ");
+				$timeout(fullCalendar.bind(self), 2000, true, arguments);
 			}
 
 		}
@@ -177,11 +200,12 @@
 		 * _id)
 		 */
 		function eventRender(event, element) {
-			//console.log('eventRender start');
+			console.log('eventRender start');
 			if (!event.id) { // Render seulement si valide
+				console.log('pas de render pour ' + JSON.stringify(event, null, 2));
 				return false;
 			} else {
-				//console.log('render ' + event.id);
+				// console.log('render ' + event.id);
 			}
 		}
 
@@ -194,7 +218,7 @@
 			// on a besoin de self=this a l'interireur de events
 			// sans faire de bind, car event a son popre this,
 			// d'ou ce wrapper
-			function events(start, end, timezone, callback) {
+			function _refreshEvents(start, end, timezone, callback) {
 				console.log('refresh event start');
 				var events_ok = [];
 				self.events.forEach(function(event) {
@@ -205,10 +229,9 @@
 				});
 				callback(events_ok); // appel du callback fullcalendar
 			}
-			return events;
+			return _refreshEvents;
 		}
-		
-		
+
 		return Brest2016Calendar;
 
 	})

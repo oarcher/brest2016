@@ -185,7 +185,7 @@ public class Activite implements Serializable {
 		// voir https://docs.jboss.org/hibernate/validator/4.1/reference/en-US/html/validator-customconstraints.html
 		// ici on a acces aux attributs, mais on ne peux pas lancer d'exeption ConstraintViolationException
 		System.out.println("PreUpdate !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! activite : "  + this.toString() );
-		Set<Activite> moyen_activites = moyen.getActivite();
+		Set<Activite> moyen_activites = moyen.getActivites();
 		for (Activite moyen_activite : moyen_activites) {
 			System.out.println("Soeurs : " + moyen_activite);
 			constraintViolations.add(null);
