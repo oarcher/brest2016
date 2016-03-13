@@ -31,7 +31,7 @@
 
 <!-- Les scipts du projet brest2016 : auteur oarcher -->
 <script type="text/javascript" src="brest2016Module.js"></script>
-<script type="text/javascript" src="brest2016Factory.js"></script>
+<script type="text/javascript" src="Utils.js"></script>
 <script type="text/javascript" src="RestRepo.js"></script>
 <script type="text/javascript" src="RestObject.js"></script>
 <!-- <script type="text/javascript" src="brest2016Calendar.js"></script> -->
@@ -52,7 +52,7 @@
 		<div class="container">
 			<div class="row">
 
-				<div class="col-md-2">
+				<div class="col-md-3">
 
 					<div ng-show=!status.logged
 						ng-init="user={login : 'user', password : 'user'}">
@@ -72,8 +72,7 @@
 
 
 
-					<button class="btn btn-primary"
-						ng-click="vm.debugCalendar()">test</button>
+					<button class="btn btn-primary" ng-click="lieu=vm.dialog('/brest2016/ng-template/lieu.html')">test</button>
 
 					<div ng-show="status.user == 'admin'">
 						<form class="form-horizontal" role="form" name="create_moyen_form"
@@ -101,21 +100,25 @@
 							</div>
 						</div>
 					</div>
-					
-					<div ng-repeat="ev in vm.brest2016events">
-						<li>ev :{{ev.id}} {{ev.title}}</li>
+
+					<div ng-show="vm.visiteur.activites.length">
+						<h5>Votre agenda</h5>
+						<uib-accordion> <uib-accordion-group
+							heading="{{activite.horaire}} "
+							ng-repeat="activite in vm.visiteur.activites | orderBy:'sort'">
+						<h4>{{activite.moyen}}</h4>
+						lieu : {{activite.lieu}} </uib-accordion-group> </uib-accordion>
 					</div>
 
 				</div>
 
 
 
-				<div class="col-md-10">
+				<div class="col-md-9">
 
 
 					<div class="calendar" ui-calendar="vm.calendar.config"
-						ng-model="vm.brest2016events"
-						calendar="{{vm.calendarName}}"></div>
+						ng-model="vm.brest2016events" calendar="{{vm.calendarName}}"></div>
 
 
 					<!-- 					<div ng-show="vm.activites.list.length"> -->

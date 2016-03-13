@@ -8,30 +8,34 @@
 
 (function() {
 	'use strict';
-	angular.module('brest2016App').factory('RestRepo', function($resource, SpringDataRestAdapter, RestObject, Brest2016Factory) {
+	angular.module('brest2016App').factory('RestRepo', function($resource, SpringDataRestAdapter, RestObject, Utils) {
 
 		console.log('Factory RestRepo init');
-
-		var apiurl = '/brest2016/rest/';
 
 		/**
 		 * Constructeur
 		 */
 		function RestRepo(restRepo) {
 			console.log('constructeur RestRepo pour ' + restRepo);
+			// le nom du repository (activites, moyens ...)
 			this.restRepo = restRepo;
+			
 			// list est la liste des objets retournée par query()
-			// toute mmodification de cette liste entraine la modification
-			// dans le scope de la fonction appelante.
-			//if (bool_query === false) {
-			//	console.log("bool_query false, appel a query() a faire explicitement ");
 			this.list = [];
-			//} else {
-			//	this.list = this.query();
-			//}
-			//this.list = this.query(callback);
-			// scope de l'objet servant aux communications avec la vue html
-			// this.scope = {};
+			
+			// l'url de l'api rest
+			this.apiurl = '/brest2016/rest/';
+			// this.apiurl est utilisable tel quel
+			// mais c'est plus pratique pour les
+			// logs d'avoir une url complete style http://localhost:8080/brest2016/rest/
+			var self = this;
+			$resource(this.apiurl + "profile", {}).get(function(response) {
+				self.apiurl=response._links.self.href.replace('profile','');
+			});
+			
+			
+			
+			
 		}
 
 		/**
@@ -45,6 +49,7 @@
 			createReturnEmpty : createReturnEmpty,
 			remove : remove,
 			update : update,
+			search : search,
 			findById : findById,
 			getIdFromJson : getIdFromJson,
 			findByJson : findByJson,
@@ -58,8 +63,8 @@
 		 */
 		function query(callback) {
 			var self = this;
-			var query_url = apiurl + self.restRepo;
-			//console.log('query url ' + query_url);
+			var query_url = this.apiurl + self.restRepo;
+			// console.log('query url ' + query_url);
 			// lst contiendra les resultat a la resolution de la promise
 			var lst = [];
 
@@ -71,13 +76,15 @@
 				// SpringDataRestAdapter
 				SpringDataRestAdapter.process(response).then(function(processedResponse) {
 					angular.forEach(processedResponse._embeddedItems, function(element, key) {
-						//console.log("appel constructeur RestObject " + self.restRepo);
+						// console.log("appel constructeur RestObject " +
+						// self.restRepo);
 						var restObject = new RestObject(element, self);
-						//console.log('query : ' + JSON.stringify(restObject.json));
-						//console.log('query : ' + restObject.getId());
+						// console.log('query : ' +
+						// JSON.stringify(restObject.json));
+						// console.log('query : ' + restObject.getId());
 						lst.push(restObject);
 					});
-					Brest2016Factory.showMessage(lst.length + ' ' + self.restRepo + ' récupéré(s) du serveur');
+					Utils.showMessage(lst.length + ' ' + self.restRepo + ' récupéré(s) du serveur');
 
 					typeof callback === 'function' && callback(lst);
 
@@ -107,7 +114,7 @@
 			var restObject = new RestObject({}, this);
 			var self = this;
 			console.log('create ' + JSON.stringify(element) + ' dans ' + self.restRepo);
-			var url = apiurl + self.restRepo;
+			var url = this.apiurl + self.restRepo;
 			console.log("curl -i -X POST -H 'Content-Type:application/json' -d '" + JSON.stringify(element) + "'  " + url);
 
 			// var copy_element = angular.copy(element);
@@ -122,7 +129,7 @@
 				// if (copy_element.hasOwnProperty(field)) {
 				// copy_element[field] = "";
 				// }
-				Brest2016Factory.showMessage(self.restRepo + ' créé!');
+				Utils.showMessage(self.restRepo + ' créé!');
 				typeof callbackok === 'function' && callbackok(restObject);
 			}, function(error) {
 				console.log('type ' + typeof callbacknok);
@@ -135,13 +142,62 @@
 		}
 
 		/**
+		 * search Cherche un element dans le repo la methode doit etre déclarée
+		 * dans l'interface spring du repository (voir findByLoginEquals dans
+		 * VisiteurRepository.java)
+		 * 
+		 * retourne le restObject trouvé, ou undefined
+		 */
+
+		function search(searchFunction, param, callbackok, callbacknok) {
+			var restObject = new RestObject({}, this);
+			var self = this;
+			console.log('search ' +  searchFunction + " " + JSON.stringify(param) + ' dans ' + self.restRepo);
+			var url = this.apiurl + self.restRepo + "/search/" + searchFunction;
+			for (var key in param) {
+				url = url + "?" + key + "=" + param[key];
+			}
+			console.log("curl -i " + url);
+
+			$resource(url, {}).get(function(found) {
+				console.log("search : trouvé");
+				$.extend(true, restObject.json, found);
+				restObject.id = restObject.getId();
+				typeof callbackok === 'function' && callbackok(found);
+			}, function(notfound) {
+				console.log("search : non trouvé");
+				typeof callbacknok === 'function' && callbacknok(notfound);
+
+			});
+
+		}
+
+		/**
+		 * suppression d'un element par son id dans la liste des restObjects
+		 */
+		function remove(id) {
+			var index = this.findIndexById(id);
+			console.log("RestRepo remove id " + id + " " + this.restRepo + " a l' index " + index);
+			this.list.splice(index, 1);
+		}
+
+		/**
+		 * mise a jour de l'element dans la liste des restObjects
+		 * 
+		 */
+		function update(element) {
+			var original = this.findById(element.id);
+			original.json = element.json;
+		}
+
+		/**
 		 * getRelationName retourne le nom d'une relation qui pointe vers ce
 		 * RestRepo a partir d'un autre RestRepo
 		 */
 
 		function getRelationName(otherRestRepo, callbackok, callbacknok) {
 			var debug = "getRelationName pour " + this.restRepo + " vers " + otherRestRepo.restRepo;
-			var url_otherRepo = apiurl + 'profile/' + otherRestRepo.restRepo;
+			var url_otherRepo = this.apiurl + 'profile/' + otherRestRepo.restRepo;
 			var found = false;
 			var self = this;
 			this.getDescriptors(function(descriptors) {
@@ -154,14 +210,16 @@
 						// console.log("Descriptor RT : " + descriptor.rt);
 						// c'est une url. c'est celle que l'on cherche
 						// si elle correspont a l'url de otherRestRepo
-						//var url_otherRepo = apiurl + 'profile/' + otherRestRepo.restRepo;
-						//console.log("cherche " +url_otherRepo + " dans " +  descriptor.rt );
+						// var url_otherRepo = this.apiurl + 'profile/' +
+						// otherRestRepo.restRepo;
+						// console.log("cherche " +url_otherRepo + " dans " +
+						// descriptor.rt );
 						if (descriptor.rt.search(url_otherRepo) !== -1) {
-							//console.log("oui!");
+							// console.log("oui!");
 							// console.log("rt_restRepo: "
 							// +JSON.stringify(rt_restRepo));
 							found = true;
-							//console.log(debug + " : " + descriptor.name);
+							// console.log(debug + " : " + descriptor.name);
 							typeof callbackok === 'function' && callbackok(descriptor.name);
 							return;
 						}
@@ -185,11 +243,11 @@
 		 */
 		function getDescriptors(callback) {
 			var self = this;
-			var url = apiurl + 'profile/' + self.restRepo;
+			var url = this.apiurl + 'profile/' + self.restRepo;
 			// la representation de l'élément est au singulier
 			var element = self.restRepo.match(/(.*)s/)[1];
 
-			//console.log('url profile : ' + url + ' pour ' + element);
+			// console.log('url profile : ' + url + ' pour ' + element);
 			var descriptors = [];
 
 			$resource(url, {}).get(function(response) {
@@ -208,7 +266,8 @@
 						});
 					}
 				});
-				//console.log("Representation finale avant callback : " + JSON.stringify(descriptors));
+				// console.log("Representation finale avant callback : " +
+				// JSON.stringify(descriptors));
 				// on cherche l'id "element-representation"
 				typeof callback === 'function' && callback(descriptors);
 			}, function(error) {
@@ -221,7 +280,7 @@
 		 * retourné (utile pour vider les champs d'un formulaire)
 		 * 
 		 */
-		function createReturnEmpty(element,callbackok,callbacknok) {
+		function createReturnEmpty(element, callbackok, callbacknok) {
 			var copy_element = angular.copy(element);
 			this.create(element, function(created) {
 				// on vide les champs de l'élément reourné.
@@ -231,27 +290,10 @@
 					}
 				}
 				typeof callbackok === 'function' && callbackok(created);
-			},function(error){
+			}, function(error) {
 				typeof callbacknok === 'function' && callbacknok(error);
 			});
 			return copy_element;
-		}
-		/**
-		 * suppression d'un element par son id dans la liste des restObjects
-		 */
-		function remove(id) {
-			var index = this.findIndexById(id);
-			console.log("RestRepo remove id " + id + " " + this.restRepo + " a l' index " + index);
-			this.list.splice(index, 1);
-		}
-
-		/**
-		 * mise a jour de l'element dans la liste des restObjects
-		 * 
-		 */
-		function update(element) {
-			var original = this.findById(element.id);
-			original.json = element.json;
 		}
 
 		/**

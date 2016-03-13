@@ -64,20 +64,24 @@ function calendarActions(restRepoMoyens, restRepoActivites, restRepoVisiteurs) {
 
 		console.log('calendrier mode admin');
 		var self = this;
-		this.config.droppable = true
-		this.config.editable = true
+		this.config.droppable = true;
+		this.config.editable = true;
 		// callBack fullCalendar
 		// events : null,
-		this.config.eventClick = removeEventActivite
-		this.config.eventDrop = updateEventActivite
-		this.config.eventReceive = moyenToEventActivite
-		this.config.eventResize = updateEventActivite
+		this.config.eventClick = removeEventActivite;
+		this.config.eventDrop = updateEventActivite;
+		this.config.eventReceive = moyenToEventActivite;
+		this.config.eventResize = updateEventActivite;
 		// this.setConfig(calendar);
 		// $.extend(true,self.config,config);
 		// self.fullCalendar(calendar);
 		// return calendar;
 
 		// this.fullCalendar(calendar);
+		this.ObjCalendar.fullCalendar(this.config);
+		this.ObjCalendar.fullCalendar('refetchEvents');
+		this.ObjCalendar.fullCalendar('rerenderEvents');
+
 		return true;
 
 		/**
@@ -87,6 +91,9 @@ function calendarActions(restRepoMoyens, restRepoActivites, restRepoVisiteurs) {
 		 */
 		function moyenToEventActivite(json_moyen) {
 			console.log("moyenToEventActivite moyen : " + JSON.stringify(json_moyen));
+			
+//			var lieu = vm.dialog("/ng-template/lieu.html");
+			
 			// on recupere l'objet moyen
 			var moyen = restRepoMoyens.findByJson(json_moyen);
 			restRepoActivites.create({
@@ -115,7 +122,7 @@ function calendarActions(restRepoMoyens, restRepoActivites, restRepoVisiteurs) {
 		 */
 		function removeEventActivite(event, jsEvent, view) {
 			var old_color = $(this).css('border-color');
-			$(this).css('border-color', 'red');
+			$(this).css('border-color', self.selectedColor);
 			if (confirm("Delete " + JSON.stringify(event.id) + "?")) {
 				var activite = event.original;
 				// on decremente le nombre d'activite du moyen correspondant
@@ -168,38 +175,32 @@ function calendarActions(restRepoMoyens, restRepoActivites, restRepoVisiteurs) {
 		this.config.droppable = false;
 		this.config.editable = false;
 		this.config.eventClick = infoEventActivite;
-		// var config = {
-		// droppable : false,
-		// editable : false,
-		// // callBack fullCalendar
-		// // events : null, // vraiment ??
-		// // eventRender : null,
-		// // events : null,
-		// eventClick : infoEventActivite,
-		// //eventDrop : null,
-		// //eventReceive : null,
-		// //eventResize : null
-		// }
-		// $.extend(true,self.config,config);
-		// delete calendar.config.calendar.eventDrop;
-		// delete calendar.config.calendar.eventReceive;
-		// delete calendar.config.calendar.eventResize;
-		// $.extend(true,this.calendar,calendar);
-		// this.setConfig(calendar);
-		// this.fullCalendar(calendar );
-		// console.log("eventSources.length :" +
-		// this.calendar.eventSources.length);
-		// this.fullCalendar( 'addEventSource', this.events );
-		// this.fullCalendar( 'removeEventSource', this.events );
-		// this.fullCalendar( 'addEventSource', this.events );
-		// self.fullCalendar(calendar);
-		// $.extend(true,this.calendar,calendar);
+		this.events.forEach(function(event) {
+			event.borderColor = self.config.eventBorderColor;
+		});
+		this.ObjCalendar.fullCalendar(this.config);
+		this.ObjCalendar.fullCalendar('refetchEvents');
+		this.ObjCalendar.fullCalendar('rerenderEvents');
 
-		return true;
+		return
+
+		
+
+				
+
+		
+
+						
+
+		
+
+				
+
+		
 
 		/**
-		 * suppression d'un event sur le calendrier c'est un callback eventClick
-		 * de fullCalendar http://fullcalendar.io/docs/mouse/eventClick/
+		 * Info sur une activite du calendrier c'est un callback eventClick de
+		 * fullCalendar http://fullcalendar.io/docs/mouse/eventClick/
 		 * 
 		 */
 		function infoEventActivite(event, jsEvent, view) {
@@ -214,7 +215,6 @@ function calendarActions(restRepoMoyens, restRepoActivites, restRepoVisiteurs) {
 				alert(message);
 			});
 			// $(this).css('border-color', old_color);
-			return true;
 		}
 
 	}
@@ -223,29 +223,85 @@ function calendarActions(restRepoMoyens, restRepoActivites, restRepoVisiteurs) {
 	 * setVisiteurMode met le calendrier dans le mode ou un visiteur peut
 	 * selectionner des activitées
 	 */
-	function setVisiteurMode() {
-		this.config.droppable = false;
+	function setVisiteurMode(visiteur) {
+		console.log(JSON.stringifyOnce(visiteur, null, 2));
+		console.log("activation calendrier en mode visiteur pour " + visiteur.json.login);
+
+		this.config.droppable = true;
 		this.config.editable = false;
 		this.config.eventClick = toggleInscription;
+		this.visiteur = visiteur;
+		// tableau des activite, en relation avec la vue html
+		this.visiteur.activites = [];
+		var self = this;
+		self.ObjCalendar.fullCalendar('eventClick', toggleInscription);
+
+		self.visiteur.getRelations(restRepoActivites, function(activites) {
+			activites.forEach(function(activite) {
+				console.log("visiteur " + visiteur.json.login + " inscrit a activité " + activite.id);
+				self.visiteur.activites.push(formatActivite(activite));
+				var event = self.findEventById(activite.id);
+				event.borderColor = self.selectedColor;
+			});
+			self.ObjCalendar.fullCalendar(self.config);
+			self.ObjCalendar.fullCalendar('refetchEvents');
+			self.ObjCalendar.fullCalendar('rerenderEvents');
+		});
 
 		return;
-		
+
+		/**
+		 * inscription ou desinscription a une activite en fonction du click
+		 * d'un evenement sur le calendrier
+		 */
 		function toggleInscription(event, jsEvent, view) {
-			// var old_color = $(this).css('border-color');
-			// $(this).css('border-color', 'red');
-
 			var activite = event.original;
+			var dom = this;
+			// on recherche dans les activitées auxquelle est inscrit le
+			// visiteur
 
-			//activite.getRelations(restRepoVisiteurs,function(insc))
-			
-			if(confirm("s'incrire ?")){
-				
+			var registered = self.visiteur.activites.map(function(activite) {
+				return activite.id;
+			}).indexOf(activite.id);
+
+			if (registered >= 0) {
+				// deja inscrit
+				if (confirm('se desinscrire ?')) {
+					self.visiteur.unSetRelation(activite, function(success) {
+						event.borderColor = self.config.eventBorderColor;
+						self.visiteur.activites.splice(registered, 1);
+					});
+
+				}
+			} else {
+				if (confirm("s'inscrire?")) {
+					self.visiteur.setRelation(activite, function(success) {
+						event.borderColor = self.selectedColor;
+						self.visiteur.activites.push(formatActivite(activite));
+						self.updateEvent(event);
+					});
+				}
 			}
-			
-			// $(this).css('border-color', old_color);
-			return true;
+
 		}
-		
-		
+
+		/**
+		 * prepare un json destinée a la vue html (date bien formatée, nom du
+		 * moyen ..)
+		 */
+		function formatActivite(activite) {
+			var viewActivite = {};
+			viewActivite.id = activite.id;
+			viewActivite.lieu = activite.json.lieu;
+			viewActivite.sort = moment(activite.json.datedebut).format('X');
+			viewActivite.horaire = moment(activite.json.datedebut).format('ddd Do h:mm') + " - " + moment(activite.json.datefin).format('h:mm');
+			console.log("horaire : " + viewActivite.horaire);
+			activite.getRelations(restRepoMoyens, function(moyen) {
+				viewActivite.moyen = moyen.json.nom;
+				console.log("moyen : " + viewActivite.moyen);
+			});
+			return viewActivite;
+		}
+
 	}
 }

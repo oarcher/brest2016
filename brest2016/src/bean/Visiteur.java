@@ -61,7 +61,7 @@ public class Visiteur implements Serializable {
 	// @JoinTable(name = "oarcher_visiteur_oarcher_activite", joinColumns =
 	// @JoinColumn(name = "visiteur_id") , inverseJoinColumns = @JoinColumn(name
 	// = "activite_id") )
-	@JoinTable
+	@JoinTable(inverseJoinColumns = @JoinColumn(name = "activite_id" ))
 	private Set<Activite> activites = new HashSet<Activite>();
 
 	public Long getId() {

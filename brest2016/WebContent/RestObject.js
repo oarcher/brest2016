@@ -11,7 +11,7 @@
 
 (function() {
 	'use strict';
-	angular.module('brest2016App').factory('RestObject', function($resource, SpringDataRestAdapter, Brest2016Factory) {
+	angular.module('brest2016App').factory('RestObject', function($resource, SpringDataRestAdapter, Utils) {
 
 		console.log('Factory RestObject init');
 
@@ -24,7 +24,8 @@
 			this.json = restJson;
 			this.parent = parent;
 			this.id = this.getId();
-			//console.log('constructeur RestObject ' + parent.restRepo + " id:" + this.id);
+			// console.log('constructeur RestObject ' + parent.restRepo + " id:"
+			// + this.id);
 			// this=restJson;
 		}
 
@@ -40,8 +41,9 @@
 			update : update,
 			remove : remove,
 			getRelations : getRelations,
-			addRelation : addRelation,
-			addOrRemoveRelation : addOrRemoveRelation,
+			setRelation : setRelation,
+			unSetRelation : unSetRelation,
+			setOrUnSetRelation : setOrUnSetRelation,
 			_getRelation : _getRelation,
 
 		// getterSetterRelation : getterSetterRelation,
@@ -62,7 +64,7 @@
 					method : 'PUT'
 				}
 			}).update(self.json, function(updated) {
-				Brest2016Factory.showMessage(self.parent.restRepo + ' mis a jour!');
+				Utils.showMessage(self.parent.restRepo + ' mis a jour!');
 				self.json = updated;
 				self.parent.update(self);
 				typeof callbackok === 'function' && callbackok(self);
@@ -77,7 +79,7 @@
 		 * complet.
 		 * 
 		 */
-		function remove(callbackok,callbacknok) {
+		function remove(callbackok, callbacknok) {
 			var self = this;
 			var self_url = this.getHref();
 			console.log('remove ' + JSON.stringify(this.json));
@@ -88,9 +90,9 @@
 			$resource(self_url, {}).remove(function(removed) {
 				console.log('suppression dans parent ' + self.parent.restRepo);
 				self.parent.remove(id);
-				Brest2016Factory.showMessage(self.parent.restRepo + ' supprimé!');
+				Utils.showMessage(self.parent.restRepo + ' supprimé!');
 				typeof callbackok === 'function' && callbackok(removed);
-			},function(error){
+			}, function(error) {
 				typeof callbacknok === 'function' && callbacknok(error);
 			});
 		}
@@ -109,7 +111,7 @@
 			var hrefRelation = this.getRelationHref(relation);
 			// console.log('getRelation ' + hrefRelation);
 			var lst = [];
-			//console.log('curl ' + hrefRelation);
+			// console.log('curl ' + hrefRelation);
 			$resource(hrefRelation, {}).get(function(response) {
 				typeof callback === 'function' && callback(response);
 			});
@@ -127,27 +129,29 @@
 		function getRelations(relationRepo, callback) {
 			var debug = 'getRelations pour ' + this.parent.restRepo + " vers  " + relationRepo.restRepo;
 			var lst = [];
-			var self=this;
+			var self = this;
 			this.parent.getRelationName(relationRepo, function(relation) {
 				console.log(debug + " : " + relation);
 				self._getRelation(relation, function(response) {
-					//console.log('getRelations raw : ' + JSON.stringify(response));
+					// console.log('getRelations raw : ' +
+					// JSON.stringify(response));
 					SpringDataRestAdapter.process(response).then(function(processedResponse) {
-						//console.log('getRelations : ' + JSON.stringify(processedResponse));
+						// console.log('getRelations : ' +
+						// JSON.stringify(processedResponse));
 						if (processedResponse._embeddedItems) {
 							angular.forEach(processedResponse._embeddedItems, function(element, key) {
-								//console.log('query : ' + JSON.stringify(element));
+								// console.log('query : ' +
+								// JSON.stringify(element));
 								var id = getIdFromJson(element);
 								lst.push(relationRepo.findById(id));
 							});
 							typeof callback === 'function' && callback(lst);
 						} else {
-							//console.log('pas _embeddedItems');
+							// console.log('pas _embeddedItems');
 							var id = getIdFromJson(processedResponse);
 							lst.push(relationRepo.findById(id));
 							typeof callback === 'function' && callback(lst[0]);
 						}
-
 
 					});
 				});
@@ -157,11 +161,8 @@
 		}
 
 		/**
-		 * addRelation
+		 * setRelation
 		 * 
-		 * @param relation :
-		 *            le nom de la relation sur laquelle il faut ajouter
-		 *            otherElement
 		 * @param otherElement :
 		 *            l'element a ajouter en relation le but est de poster l'url
 		 *            de l'element detination sur l'url de l'element source
@@ -171,77 +172,75 @@
 		 *            http://localhost:8080/brest2016/rest/visiteurs/1/activite
 		 *            permet de lier activite/2 aux activitées du visiteur/1
 		 */
-		function addRelation(relation, otherElement, callback) {
-			// console.log("addRelation");
-			// console.log("element :" + JSON.stringify(element));
-			// console.log("otherElement :" + JSON.stringify(otherElement));
-			// var hrefOtherElement = getSelfHref(otherElement);
-			// console.log('hrefOtherElement ' + hrefOtherElement);
-			// var otherRestObject = getRestObjectFromHref(hrefOtherElement);
-			// console.log('otherRestObject ' + otherRestObject);
-			var hrefRelation = this.getRelationHref(relation);
-			var restRepo = this.getRestRepo();
-			// console.log("hrefRelation : " + hrefRelation);
-			var message = "entre " + this.getRestRepo() + " et " + otherElement.getRestRepo();
-			console.log('curl -v -X PUT -H "Content-Type: text/uri-list" -d "' + otherElement.getHref + '" ' + hrefRelation);
-			$resource(hrefRelation, {}, {
-				post : {
-					method : "PUT",
-					isArray : false,
-					headers : {
-						'Content-Type' : 'text/uri-list'
+		function setRelation(otherElement, callback) {
+			var self = this;
+			this.parent.getRelationName(otherElement.parent, function(relation) {
+				var hrefRelation = self.getRelationHref(relation);
+				// console.log("hrefRelation : " + hrefRelation);
+				var message = "entre " + self.parent.restRepo + " et " + otherElement.parent.restRepo;
+				console.log('curl -v -X PATCH -H "Content-Type: text/uri-list" -d "' + otherElement.getHref() + '" ' + hrefRelation);
+				$resource(hrefRelation, {}, {
+					post : {
+						method : "PATCH",
+						isArray : false,
+						headers : {
+							'Content-Type' : 'text/uri-list'
+						}
 					}
-				}
-			}).post(otherElement.getHref, function(success) {
-				Brest2016Factory.showMessage("Relation créée " + message);
-				typeof callback === 'function' && callback();
+				}).post(otherElement.getHref(), function(success) {
+					Utils.showMessage("Relation créée " + message);
+					typeof callback === 'function' && callback();
+				});
 			});
 		}
 
 		// /**
-		// * addRelations ajoute plusieurs relation d'un coup
+		// * setRelations ajoute plusieurs relation d'un coup
 		// */
-		// function addRelations(otherElements) {
+		// function setRelations(otherElements) {
 		// otherElements.forEach(function(otherElement) {
-		// addRelation(element, otherElement)
+		// setRelation(element, otherElement)
 		// });
 		// }
 		/**
-		 * removeRelation element : l'element auquel il faut supprimer une
+		 * unSetRelation element : l'element auquel il faut supprimer une
 		 * relation otherElement : l'element a supprimer le but est de recupere
 		 * l'url href de l'element, et d'y concatener le nom du restObject et
 		 * l'id de otherElement, pour ensuite appeller la methode
 		 * $resource.remove
 		 */
-		function removeRelation(relation, otherElement) {
-			var element = this.json;
-			// console.log("removeRelation");
-			// var hrefOtherElement = otherElement.getHref;
-			// var otherRestObject = getRestObjectFromHref(hrefOtherElement);
-			// var idOtherElement = getIdFromHref(hrefOtherElement);
+		function unSetRelation(otherElement, callback) {
+			var self=this;
+			this.parent.getRelationName(otherElement.parent, function(relation) {
+				// console.log("unSetRelation");
+				// var hrefOtherElement = otherElement.getHref;
+				// var otherRestObject =
+				// getRestObjectFromHref(hrefOtherElement);
+				// var idOtherElement = getIdFromHref(hrefOtherElement);
 
-			var hrefRemove = this.getRelationHref(relation) + "/" + otherElement.getId();
-			// console.log('hrefRemove : ' + hrefRemove);
-			// var restObject = getRestObject(element);
-			var debug = "removeRelation : " + element.getHref + " " + otherElement.getHref + " par " + hrefRemove;
-			var message = "entre " + this.getRepo() + " et " + otheElement.getRepo();
-			$resource(hrefRemove, {}).remove(function(removed) {
-				console.log('OK :' + debug);
-				Brest2016Factory.showMessage("Relation defaite " + message);
-			}, function(error) {
-				Brest2016Factory.showMessage("Erreur a la suppression de la relation " + message + " : " + error);
-				console.log('NOK :' + debug);
+				var hrefRemove = self.getRelationHref(relation) + "/" + otherElement.getId();
+				// console.log('hrefRemove : ' + hrefRemove);
+				// var restObject = getRestObject(element);
+				var debug = "unSetRelation : " + self.getHref + " " + otherElement.getHref + " par " + hrefRemove;
+				var message = "entre " + self.parent.restRepo + " et " + otherElement.parent.restRepo;
+				$resource(hrefRemove, {}).remove(function(removed) {
+					console.log('OK :' + debug);
+					Utils.showMessage("Relation defaite " + message);
+					typeof callback === 'function' && callback();
+				}, function(error) {
+					Utils.showMessage("Erreur a la suppression de la relation " + message + " : " + error);
+					console.log('NOK :' + debug);
+				});
 			});
-
 		}
 
-		function addOrRemoveRelation(relation, otherElement, bool) {
+		function setOrUnSetRelation(relation, otherElement, bool) {
 			if (bool) {
-				console.log("addOrRemoveRelation : add");
-				this.addRelation(relation, otherElement);
+				console.log("setOrUnSetRelation : add");
+				this.setRelation(relation, otherElement);
 			} else {
-				console.log("addOrRemoveRelation : remove");
-				this.removeRelation(relation, otherElement);
+				console.log("setOrUnSetRelation : remove");
+				this.unSetRelation(relation, otherElement);
 			}
 		}
 
@@ -316,7 +315,7 @@
 		// // on est un setter
 		// // console.log("setter");
 		// self.scope.element[hrefElement].relation[hrefOtherElement] = setter;
-		// addOrRemoveRelation(element, otherElement, setter);
+		// setOrUnSetRelation(element, otherElement, setter);
 		// } else {
 		// // on est un getter
 		// // console.log("getter " + hrefElement + " " +

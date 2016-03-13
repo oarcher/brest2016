@@ -8,56 +8,7 @@ angular.module('brest2016App').controller('Brest2016Controller', brest2016Contro
 
 // brest2016Controller.$inject = [$http, 'StandService'];
 
-/**
- * 
- */
-JSON.stringifyOnce = function(obj, replacer, indent) {
-	var printedObjects = [];
-	var printedObjectKeys = [];
-
-	function printOnceReplacer(key, value) {
-		if (printedObjects.length > 2000) { // browsers will not print more than
-			// 20K, I don't see the point to
-			// allow 2K.. algorithm will not be
-			// fast anyway if we have too many
-			// objects
-			return 'object too long';
-		}
-		var printedObjIndex = false;
-		printedObjects.forEach(function(obj, index) {
-			if (obj === value) {
-				printedObjIndex = index;
-			}
-		});
-
-		if (key == '') { // root element
-			printedObjects.push(obj);
-			printedObjectKeys.push("root");
-			return value;
-		}
-
-		else if (printedObjIndex + "" != "false" && typeof (value) == "object") {
-			if (printedObjectKeys[printedObjIndex] == "root") {
-				return "(pointer to root)";
-			} else {
-				return "(see " + ((!!value && !!value.constructor) ? value.constructor.name.toLowerCase() : typeof (value)) + " with key " + printedObjectKeys[printedObjIndex] + ")";
-			}
-		} else {
-
-			var qualifiedKey = key || "(empty key)";
-			printedObjects.push(value);
-			printedObjectKeys.push(qualifiedKey);
-			if (replacer) {
-				return replacer(key, value);
-			} else {
-				return value;
-			}
-		}
-	}
-	return JSON.stringify(obj, printOnceReplacer, indent);
-};
-
-function brest2016Controller(Brest2016Factory, RestRepo, $timeout, BaseCalendar) {
+function brest2016Controller(Utils, RestRepo, RestObject, $timeout, $uibModal, BaseCalendar) {
 	/**
 	 * On préfère l'utilisation de 'this' a $scope, qui peut induire en erreur
 	 * dans certains cas.
@@ -76,9 +27,12 @@ function brest2016Controller(Brest2016Factory, RestRepo, $timeout, BaseCalendar)
 	 * facon d'une interface.
 	 */
 	// login, logout
-	vm.login = login; // Brest2016Factory.login;
+	vm.login = login; // Utils.login;
 	vm.logout = logout;
 
+	// boite de dialogue modale
+	vm.dialog = dialog;
+	
 	vm.createMoyen = createMoyen;
 
 	var colorNames = [ "AliceBlue", "AntiqueWhite", "Aqua", "Aquamarine", "Azure", "Beige", "Blue", "BlueViolet", "Brown", "BurlyWood", "CadetBlue", "Chartreuse", "Chocolate", "Coral", "CornflowerBlue", "Cornsilk", "Crimson", "Cyan", "DarkCyan", "DarkGoldenRod", "DarkGrey", "DarkKhaki",
@@ -90,6 +44,8 @@ function brest2016Controller(Brest2016Factory, RestRepo, $timeout, BaseCalendar)
 	 */
 	vm.moyens = new RestRepo("moyens");
 	vm.activites = new RestRepo("activites");
+	// vm.visiteurs = new RestRepo("visiteurs");
+	vm.visiteur = undefined; // sera initialisé au login
 
 	vm.brest2016events = [];
 	vm.calendarName = "brest2016calendar";
@@ -100,10 +56,11 @@ function brest2016Controller(Brest2016Factory, RestRepo, $timeout, BaseCalendar)
 	$timeout(function() {
 		// mise en place du calendrier, et des actions associées
 		vm.calendar = new BaseCalendar(vm.calendarName, vm.brest2016events);
-		vm.calendar.addActivite = calendarActions(vm.moyens, vm.activites ).addActivite;
+		vm.calendar.addActivite = calendarActions(vm.moyens, vm.activites).addActivite;
 		vm.calendar.setAdminMode = calendarActions(vm.moyens, vm.activites).setAdminMode;
 		vm.calendar.setDefaultMode = calendarActions(vm.moyens, vm.activites).setDefaultMode;
 		vm.calendar.setVisiteurMode = calendarActions(vm.moyens, vm.activites).setVisiteurMode;
+		vm.calendar.setDefaultMode();
 
 		vm.debugCalendar = function() {
 			vm.calendar.ObjCalendar.fullCalendar('refetchEvents');
@@ -140,7 +97,7 @@ function brest2016Controller(Brest2016Factory, RestRepo, $timeout, BaseCalendar)
 		// la recupération de la liste des visiteurs n'est valable
 		// que pour admin
 		vm.visiteurs = new RestRepo("visiteurs");
-		vm.visiteurs.query();
+		// vm.visiteurs.query();
 
 		// les activites ne seront pas recupérées
 		// par le constructeur, c'est le calendrier qui le fera
@@ -151,21 +108,28 @@ function brest2016Controller(Brest2016Factory, RestRepo, $timeout, BaseCalendar)
 	 */
 
 	function login(user, password) {
-		return Brest2016Factory.login(user, password, function(status) {
+		return Utils.login(user, password, function(status) {
 			if (status.user == "admin") {
 				vm.calendar.setAdminMode();
 			} else {
-				vm.calendar.setVisiteurMode();
+				// on recupere le json du visiteur
+				vm.visiteurs.search("findByLogin", {
+					"login" : user
+				}, function(visiteur) {
+					vm.visiteur = new RestObject(visiteur, vm.visiteurs);
+					vm.calendar.setVisiteurMode(vm.visiteur);
+				});
 			}
+
 		});
 
 	}
 
 	function logout() {
 		// desactivation des fonctionnalités du calendrier
+		Utils.logout();
 		vm.calendar.setDefaultMode();
-		return Brest2016Factory.logout();
-
+		vm.visiteur = undefined;
 	}
 
 	/**
@@ -208,4 +172,72 @@ function brest2016Controller(Brest2016Factory, RestRepo, $timeout, BaseCalendar)
 			}
 		});
 	}
+
+	/**
+	 * boite de dialogue modal https://angular-ui.github.io/bootstrap/
+	 */
+	var transfert = "test";
+	function dialog(templateUrl) {
+		
+		var modalInstance = $uibModal.open({
+			animation : true,
+			templateUrl : templateUrl,
+			controller : dialogControler,
+			controllerAs : 'ctrl',
+			size : 'sm',
+			resolve : {
+				transfert : function() {
+					return transfert;
+				}
+			}
+		});
+
+		modalInstance.result.then(function(ok) {
+			console.log('retour modal :' + ok);
+			return ok;
+		}, function() {
+			return;
+		});
+		
+
+		function dialogControler($uibModalInstance,transfert){
+			console.log("controleur modal: " + transfert);
+
+			this.ok = ok;
+			this.cancel = cancel;
+			
+			function ok() {
+				$uibModalInstance.close("retour");
+			};
+
+			function cancel() {
+				$uibModalInstance.dismiss('cancel');
+			};
+		}
+		
+	}
+	
+
+
 }
+//
+///**
+// * la boite de dialogue modale a son propre controleur
+// */
+//angular.module('brest2016App').controller('ModalInstanceCtrl', function( $uibModalInstance, items) {
+//
+////	
+////	$scope.items = items;
+////	$scope.selected = {
+////		item : $scope.items[0]
+////	};
+//	
+//
+//	this.ok = function() {
+//		$uibModalInstance.close("retour");
+//	};
+//
+//	this.cancel = function() {
+//		$uibModalInstance.dismiss('cancel');
+//	};
+//});
