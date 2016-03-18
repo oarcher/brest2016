@@ -8,7 +8,7 @@ angular.module('brest2016App').controller('Brest2016Controller', brest2016Contro
 
 // brest2016Controller.$inject = [$http, 'StandService'];
 
-function brest2016Controller(Utils, RestRepo, RestObject, $timeout, $uibModal, BaseCalendar) {
+function brest2016Controller($scope, Utils, RestRepo, RestObject, $timeout, dialog, BaseCalendar, calendarActions) {
 	/**
 	 * On préfère l'utilisation de 'this' a $scope, qui peut induire en erreur
 	 * dans certains cas.
@@ -30,39 +30,39 @@ function brest2016Controller(Utils, RestRepo, RestObject, $timeout, $uibModal, B
 	vm.login = login; // Utils.login;
 	vm.logout = logout;
 
-	// boite de dialogue modale
-	vm.dialog = dialog;
-	
 	vm.createMoyen = createMoyen;
 
-	var colorNames = [ "AliceBlue", "AntiqueWhite", "Aqua", "Aquamarine", "Azure", "Beige", "Blue", "BlueViolet", "Brown", "BurlyWood", "CadetBlue", "Chartreuse", "Chocolate", "Coral", "CornflowerBlue", "Cornsilk", "Crimson", "Cyan", "DarkCyan", "DarkGoldenRod", "DarkGrey", "DarkKhaki",
-			"DarkMagenta", "DarkOliveGreen", "Darkorange", "DarkOrchid", "DarkSalmon", "DarkSeaGreen", "DarkTurquoise", "DarkViolet", "DeepPink", "DeepSkyBlue", "DimGray", "DimGrey", "DodgerBlue", "FireBrick", "FloralWhite", "ForestGreen", "Fuchsia", "Gainsboro", "GhostWhite", "Gold", "GoldenRod" ];
-	var colorIndex = 0;
 
 	/**
-	 * Action a faire a l'initialisation du controller
+	 * Action a faire a l'initialisation du controller, et porentiellemnet avant
+	 * le rendu de la vue html
 	 */
+
 	vm.moyens = new RestRepo("moyens");
 	vm.activites = new RestRepo("activites");
-	// vm.visiteurs = new RestRepo("visiteurs");
+	vm.visiteurs = new RestRepo("visiteurs");
 	vm.visiteur = undefined; // sera initialisé au login
 
+	// les variables du calendrier ui-calendar
+	// (le tableau de evenements, et le nom du calendrier)
 	vm.brest2016events = [];
 	vm.calendarName = "brest2016calendar";
 
-	// timeout a 0 pour forcer le rendu de la vue avant d'utiliser le calendrier
-	// et ainsi avoir un uiCalendarConfig.calendars.brest2016calendar utilisable
+	// initialisation des variables du controller a faire apres le rendu de la
+	// vue html.
+	// Ceci permet d'avoir uiCalendarConfig.calendars de defini
 	// (voir bug https://github.com/angular-ui/ui-calendar/issues/195 )
 	$timeout(function() {
 		// mise en place du calendrier, et des actions associées
 		vm.calendar = new BaseCalendar(vm.calendarName, vm.brest2016events);
-		vm.calendar.addActivite = calendarActions(vm.moyens, vm.activites).addActivite;
-		vm.calendar.setAdminMode = calendarActions(vm.moyens, vm.activites).setAdminMode;
-		vm.calendar.setDefaultMode = calendarActions(vm.moyens, vm.activites).setDefaultMode;
-		vm.calendar.setVisiteurMode = calendarActions(vm.moyens, vm.activites).setVisiteurMode;
+		vm.calendar.addActivite = calendarActions(vm.moyens, vm.activites, vm.visiteurs).addActivite;
+		vm.calendar.setAdminMode = calendarActions(vm.moyens, vm.activites, vm.visiteurs).setAdminMode;
+		vm.calendar.setDefaultMode = calendarActions(vm.moyens, vm.activites, vm.visiteurs).setDefaultMode;
+		vm.calendar.setVisiteurMode = calendarActions(vm.moyens, vm.activites, vm.visiteurs).setVisiteurMode;
 		vm.calendar.setDefaultMode();
 
-		vm.debugCalendar = function() {
+		vm.debug = function() {
+			// dialog.confirm("/brest2016/ng-template/lieu.html");
 			vm.calendar.ObjCalendar.fullCalendar('refetchEvents');
 			vm.calendar.ObjCalendar.fullCalendar('rerenderEvents');
 		}
@@ -74,7 +74,7 @@ function brest2016Controller(Utils, RestRepo, RestObject, $timeout, $uibModal, B
 		});
 
 		vm.activites.query(function(activites) {
-			console.log('Ajout dans le calendier de ' + activites.length + "activitées")
+			console.log('Ajout dans le calendier de ' + activites.length + " activitées")
 			activites.forEach(function(activite) {
 				vm.calendar.addActivite(activite);
 				// on incremente le nombre d'activite du moyen concerné
@@ -87,20 +87,12 @@ function brest2016Controller(Utils, RestRepo, RestObject, $timeout, $uibModal, B
 				})
 
 			});
-			console.log('activites ajoutée');
+			console.log('activites ajoutées');
 
 		});
 
 		// gestion de la suppression d'un moyen
 		vm.removeMoyen = removeMoyen;
-
-		// la recupération de la liste des visiteurs n'est valable
-		// que pour admin
-		vm.visiteurs = new RestRepo("visiteurs");
-		// vm.visiteurs.query();
-
-		// les activites ne seront pas recupérées
-		// par le constructeur, c'est le calendrier qui le fera
 
 	}, 0); // $timeout
 	/**
@@ -136,6 +128,9 @@ function brest2016Controller(Utils, RestRepo, RestObject, $timeout, $uibModal, B
 	 * creation d'un moyen C'est juste un wrapper pour ajouter un code couleur.
 	 */
 
+	var colorNames = [ "AliceBlue", "AntiqueWhite", "Aqua", "Aquamarine", "Azure", "Beige", "Blue", "BlueViolet", "Brown", "BurlyWood", "CadetBlue", "Chartreuse", "Chocolate", "Coral", "CornflowerBlue", "Cornsilk", "Crimson", "Cyan", "DarkCyan", "DarkGoldenRod", "DarkGrey", "DarkKhaki",
+	                   "DarkMagenta", "DarkOliveGreen", "Darkorange", "DarkOrchid", "DarkSalmon", "DarkSeaGreen", "DarkTurquoise", "DarkViolet", "DeepPink", "DeepSkyBlue", "DimGray", "DimGrey", "DodgerBlue", "FireBrick", "FloralWhite", "ForestGreen", "Fuchsia", "Gainsboro", "GhostWhite", "Gold", "GoldenRod" ];
+	var colorIndex = 0;
 	function createMoyen(moyen) {
 		var created = vm.moyens.createReturnEmpty(moyen, function(created) {
 			created.color = colorNames[colorIndex++ % colorNames.length];
@@ -144,100 +139,54 @@ function brest2016Controller(Utils, RestRepo, RestObject, $timeout, $uibModal, B
 		return created;
 	}
 
+	/**
+	 * suppression d'un moyen. Une confirmation est demandée si le moyen a été
+	 * deployé.
+	 * 
+	 */
 	function removeMoyen(moyen) {
 		moyen.getRelations(vm.activites, function(activites) {
-			// vm.moyens.getRelations(moyen, "activite", function(activites)
-			// {
 			if (activites.length == 0) {
 				moyen.remove();
-				// vm.moyens.remove(moyen);
 			} else {
-				if (confirm("supprimer les " + activites.length + "acivités associées ?")) {
-					// vm.moyens.remove(moyen);
+				dialog.confirm("supprimer les " + activites.length + " activités associées ?").then(function(ok) {
+					// On doit etre sur a 100% que toutes les activitées on eté
+					// supprimées
+					// avant de supprimer le moyen. c'est donc le dernier
+					// callbackok de suppression d'activite qui supprime le
+					// moyen.
+					var copy_activites = angular.copy(activites);
 					activites.forEach(function(activite) {
-						console.log('retrait cascade activité id : ' + activite.id);
+						
 						var id = activite.id;
-						activite.remove();
-						console.log('retrait cascade ok');
-						// // retrait du calendrier
-						vm.calendar.removeEvent(vm.calendar.findEventById(id));
-						console.log('retrait calendrier ok');
+						console.log('retrait cascade activité id : ' + activite.id);
+						var event = vm.calendar.findEventById(id);
+						if (event.nbVisiteurs != 0) {
+							Utils.showMessage("pas de suppression : " + event.nbVisiteurs +  " visiteurs sont inscrits","warning");
+						} else {
+
+							activite.remove(function(removed) {
+								console.log('retrait cascade ok');
+								// retrait du calendrier
+								vm.calendar.removeEvent(event);
+								console.log('retrait calendrier ok');
+								var index_activite = copy_activites.map(function(copy_activite) {
+									return copy_activite.id;
+								}).indexOf(activite.id);
+								copy_activites.splice(index_activite, 1);
+								if (copy_activites.length == 0) {
+									// derniere activite supprimmée
+									console.log('retrait moyen');
+									moyen.remove();
+								}
+							});
+						}
 
 					});
-					console.log('retrait moyen ?');
-					moyen.remove();
-					console.log('retrait moyen ok');
-				}
+				});
 
 			}
 		});
 	}
-
-	/**
-	 * boite de dialogue modal https://angular-ui.github.io/bootstrap/
-	 */
-	var transfert = "test";
-	function dialog(templateUrl) {
-		
-		var modalInstance = $uibModal.open({
-			animation : true,
-			templateUrl : templateUrl,
-			controller : dialogControler,
-			controllerAs : 'ctrl',
-			size : 'sm',
-			resolve : {
-				transfert : function() {
-					return transfert;
-				}
-			}
-		});
-
-		modalInstance.result.then(function(ok) {
-			console.log('retour modal :' + ok);
-			return ok;
-		}, function() {
-			return;
-		});
-		
-
-		function dialogControler($uibModalInstance,transfert){
-			console.log("controleur modal: " + transfert);
-
-			this.ok = ok;
-			this.cancel = cancel;
-			
-			function ok() {
-				$uibModalInstance.close("retour");
-			};
-
-			function cancel() {
-				$uibModalInstance.dismiss('cancel');
-			};
-		}
-		
-	}
-	
-
 
 }
-//
-///**
-// * la boite de dialogue modale a son propre controleur
-// */
-//angular.module('brest2016App').controller('ModalInstanceCtrl', function( $uibModalInstance, items) {
-//
-////	
-////	$scope.items = items;
-////	$scope.selected = {
-////		item : $scope.items[0]
-////	};
-//	
-//
-//	this.ok = function() {
-//		$uibModalInstance.close("retour");
-//	};
-//
-//	this.cancel = function() {
-//		$uibModalInstance.dismiss('cancel');
-//	};
-//});

@@ -16,9 +16,11 @@ import bean.Activite;
 
 /**
  * @author oarcher
+ * Le repository activites
+ * C'est juste un interface, spring data se charge d'en faire un repository
+ * Voir le repository 'VisiteurRepository' pour un exemple plus poussé.
  *
  */
-//@PreAuthorize("hasRole('ROLE_ADMIN')")
 public interface ActiviteRepository  extends CrudRepository<Activite, Long> {
 
 }

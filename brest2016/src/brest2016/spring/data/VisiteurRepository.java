@@ -18,12 +18,13 @@ import bean.Activite;
 import bean.Visiteur;
 /**
  * @author oarcher
+ * Le repository Visiteur
+ * 
+ * La particularité de ce repository est de restreindre
+ * son exposition en fonction des privilèges de l'utilisateur
  *
  */
-//@PreAuthorize("hasRole('ROLE_ADMIN')")
-//@PostAuthorize("returnObject.login == principal.username or hasRole('ROLE_ADMIN')")
 public interface VisiteurRepository  extends CrudRepository<Visiteur, Long> {
-	//List<Visiteur> findByNomLike(String nom);
 
 	/**
 	 * @param username
@@ -42,8 +43,6 @@ public interface VisiteurRepository  extends CrudRepository<Visiteur, Long> {
 	@PostAuthorize("returnObject.login == principal.username or hasRole('ROLE_ADMIN')")
 	Visiteur findByLogin(@Param("login") String login);
 
-	
-	//List<Visiteur> findByLoginLike(@Param("login") String login);
 	
 	// n'est pas exporté, sert a la validation du login
 	@RestResource(exported = false)

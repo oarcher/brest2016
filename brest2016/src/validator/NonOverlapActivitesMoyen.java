@@ -9,6 +9,9 @@ package validator;
  * permet la mise en place d'un validateur personnalisé @NonOverLapActivitesMoyen
  * pour la validation du deploiement d'un moyen en activite:
  * un moyen ne peut pas deployer 2 activitées au meme moment !
+ * Ce validateur sert a valider la creation d'une activité, en verifiant
+ * si il y a un overlapping de dates avec les actvites soeurs.
+ * C'est un validateur de classe (ElementType.METHOD)
  
  */
 

@@ -16,9 +16,12 @@ import bean.Moyen;
 
 /**
  * @author oarcher
+ * 
+ * Le repository Moyens
+ * C'est juste un interface, spring data se charge d'en faire un repository
+ * Voir le repository 'VisiteurRepository' pour un exemple plus poussé.
  *
  */
-//@PreAuthorize("hasRole('ROLE_ADMIN')")
 public interface MoyenRepository  extends CrudRepository<Moyen, Long> {
 
 }

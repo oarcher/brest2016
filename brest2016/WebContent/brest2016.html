@@ -10,6 +10,7 @@
 <link rel="stylesheet" type="text/css" href="styles/animate.css">
 <link rel="stylesheet" type="text/css" href="styles/fullcalendar.css">
 <link rel="stylesheet" type="text/css" href="styles/brest2016.css">
+<link rel="stylesheet" type="text/css" href="styles/jquery.jqplot.css">
 
 <!-- addons -->
 <script type="text/javascript" src="js/jquery.js"></script>
@@ -21,6 +22,15 @@
 <script type="text/javascript" src="js/fullcalendar.js"></script>
 <script type="text/javascript" src='js/fr.js'></script>
 <script type="text/javascript" src="js/gcal.js"></script>
+<script type="text/javascript" src="js/moment-range.js"></script>
+<script type="text/javascript" src="js/jquery.jqplot.js"></script>
+<script type="text/javascript" src="js/jqplot.pieRenderer.js"></script>
+<script type="text/javascript" src="js/jqplot.barRenderer.js"></script>
+<script type="text/javascript" src="js/jqplot.dateAxisRenderer.js"></script>
+<script type="text/javascript" src="js/jqplot.categoryAxisRenderer.js"></script>
+<script type="text/javascript" src="js/jqplot.canvasAxisTickRenderer.js"></script>
+<script type="text/javascript" src="js/jqplot.canvasTextRenderer.js"></script>
+<script type="text/javascript" src="js/chart.js"></script>
 <script type="text/javascript" src="js/ui-bootstrap-tpls-1.1.2.js"></script>
 <script type="text/javascript" src="js/angular-resource.js"></script>
 <script type="text/javascript" src="js/angular-spring-data-rest.js"></script>
@@ -32,6 +42,7 @@
 <!-- Les scipts du projet brest2016 : auteur oarcher -->
 <script type="text/javascript" src="brest2016Module.js"></script>
 <script type="text/javascript" src="Utils.js"></script>
+<script type="text/javascript" src="dialog.js"></script>
 <script type="text/javascript" src="RestRepo.js"></script>
 <script type="text/javascript" src="RestObject.js"></script>
 <!-- <script type="text/javascript" src="brest2016Calendar.js"></script> -->
@@ -50,17 +61,24 @@
 
 	<div class="main">
 		<div class="container">
-			<div class="row">
+			<div class="row" ng-cloak>
 
 				<div class="col-md-3">
 
 					<div ng-show=!status.logged
-						ng-init="user={login : 'user', password : 'user'}">
+						ng-init="user={login : 'admin', password : 'admin'}">
 						<form class="form-horizontal" role="form" name="form_login"
 							ng-submit="status=vm.login(user.login,user.password)">
-							<label class="control-label"> Login</label><input type="text"
-								ng-model="user.login" /> <label class="control-label">Password</label><input
-								type="password" ng-model="user.password" />
+							<table>
+								<tr>
+									<td><label class="control-label"> Login</label></td>
+									<td><input type="text" ng-model="user.login" /></td>
+								</tr>
+								<tr>
+									<td><label class="control-label">Password</label></td>
+									<td><input type="password" ng-model="user.password" /></td>
+								</tr>
+							</table>
 							<button class="btn btn-primary">Login</button>
 						</form>
 					</div>
@@ -72,14 +90,37 @@
 
 
 
-					<button class="btn btn-primary" ng-click="lieu=vm.dialog('/brest2016/ng-template/lieu.html')">test</button>
-
 					<div ng-show="status.user == 'admin'">
 						<form class="form-horizontal" role="form" name="create_moyen_form"
-							ng-submit="moyen_a_creer = vm.createMoyen(moyen_a_creer)">
-							<label class="control-label">Moyen</label> nom :<input
-								type="text" ng-model="moyen_a_creer.nom" />
-							<button class="btn btn-primary">Add</button>
+							ng-submit="moyen_a_creer = vm.createMoyen(moyen_a_creer)"
+							novalidate>
+							<label class="control-label">Moyen</label>
+							<table>
+								<tr>
+									<td>Nom :</td>
+									<td><input type="text" ng-model="moyen_a_creer.nom"
+										name="nom" ng-minlength="3" required /></td>
+								</tr>
+								<tr>
+									<td>Lieu :</td>
+									<td><input type="text" name="lieu" not-in-Paris
+										ng-model="moyen_a_creer.lieu" /></td>
+									<span ng-show="create_moyen_form.lieu.$error.not-in-Paris">Pas
+										à Paris!</span>
+								</tr>
+								<tr>
+									<td>places :</td>
+									<td><input type="number" ng-model="moyen_a_creer.nbPlaces" /></td>
+								</tr>
+							</table>
+
+							<button ng-disabled="create_moyen_form.$invalid"
+								class="btn btn-primary">Ajouter</button>
+							<div ng-messages="create_moyen_form.nom.$error"
+								style="color: maroon" role="alert">
+								<div ng-message="required">A remplir</div>
+								<div ng-message="minlength">Trop court</div>
+							</div>
 						</form>
 
 						<div ng-show="vm.moyens.list.length">
@@ -121,85 +162,9 @@
 						ng-model="vm.brest2016events" calendar="{{vm.calendarName}}"></div>
 
 
-					<!-- 					<div ng-show="vm.activites.list.length"> -->
-					<!-- 						liste des stands -->
-					<!-- 						<div ng-repeat="activite in vm.activites.list"> -->
-					<!-- 							<li>nom: {{activite.nom}} lieu: {{activite.lieu}} <span -->
-					<!-- 									ng-click="vm.calendar.addActivite(activite)"> vers -->
-					<!-- 									agenda </span> -->
-					<!-- 							</li> -->
-					<!-- 						</div> -->
-					<!-- 					</div> -->
-
-					<!-- 					<div> -->
-					<!-- 						<form class="form-horizontal" role="form" -->
-					<!-- 							name="create_activite_form" -->
-					<!-- 							ng-submit="activite_a_creer = vm.activites.create(activite_a_creer)"> -->
-					<!-- 							<label class="control-label">Activite</label> nom :<input -->
-					<!-- 								type="text" ng-model="activite_a_creer.nom" minlength="2" -->
-					<!-- 								maxlength="15" /> -->
-					<!-- 							<div ng-messages="create_activite_form.nom.$error" -->
-					<!-- 								ng-if='create_activite_form.nom.$dirty'> -->
-					<!-- 								<div ng-message="minlength">au moins 2 caractères</div> -->
-					<!-- 								<div ng-message="maxlength">au plus 15 caractères</div> -->
-					<!-- 							</div> -->
-					<!-- 							lieu : <input type="text" ng-model="activite_a_creer.lieu" /> -->
-					<!-- 							debut : <input type="text" ng-model="activite_a_creer.datedebut" /> -->
-					<!-- 							fin :<input type="text" ng-model="activite_a_creer.datefin" /> -->
-					<!-- 							<button class="btn btn-primary">Add</button> -->
-					<!-- 						</form> -->
-
-					<!-- 						<div ng-show="vm.activites.list.length"> -->
-					<!-- 							liste des stands -->
-					<!-- 							<div ng-repeat="activite in vm.activites.list"> -->
-					<!-- 								<li>nom: {{activite.nom}} lieu: {{activite.lieu}} <span -->
-					<!-- 										remove-on-click ng-click="vm.activites.remove(activite)"> -->
-					<!-- 										supprimer </span> 						<span ng-repeat="horaire in vm.horaires.list"> -->
-					<!-- 															<label>{{horaire.plage}} <input type="checkbox" -->
-					<!-- 																ng-model-options="{getterSetter: true}" 							ng-model="vm.stands.getterSetterRelation(stand, horaire)" /> -->
-					<!-- 															</label> 					</span> -->
-					<!-- 								</li> -->
-					<!-- 							</div> -->
-					<!-- 						</div> -->
-
-					<form class="form-horizontal" role="form"
-						ng-submit="visiteur_a_creer = vm.visiteurs.create(visiteur_a_creer)">
-						<label class="control-label">Visiteur</label> <input type="text"
-							ng-model="visiteur_a_creer.prenom" /> <input type="text"
-							ng-model="visiteur_a_creer.nom" /> <input type="text"
-							ng-model="visiteur_a_creer.password" />
-						<button class="btn btn-primary">Add</button>
-					</form>
-
-
-
-					<div ng-show="vm.visiteurs.list.length">
-						liste des visiteurs
-						<div ng-repeat="visiteur in vm.visiteurs.list">
-							<li>{{visiteur.prenom}} {{visiteur.nom}} <span
-									remove-on-click ng-click="vm.visiteurs.remove(visiteur)">
-									supprimer </span> <span
-									ng_click="activites = vm.visiteurs.getRelations(visiteur, 'activite')">activite</span>
-								<div ng-repeat="activite in activites">{{activite}}</div>
-							</li>
-						</div>
-					</div>
-
-
-
-					<form class="form-horizontal" role="form"
-						ng-submit="vm.visiteurs.addRelation(visiteur, activite)">
-						<select ng-model="visiteur"
-							ng-options="visiteur.prenom for visiteur in vm.visiteurs.list"></select>
-						<select ng-model="activite"
-							ng-options="activite for activite in vm.activites.list"></select>
-						</select>
-						<button class="btn btn-primary">Inscrire</button>
-					</form>
 				</div>
 			</div>
 		</div>
-	</div>
 	</div>
 </body>
 </html>

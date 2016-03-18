@@ -19,23 +19,21 @@
 			console.log('constructeur RestRepo pour ' + restRepo);
 			// le nom du repository (activites, moyens ...)
 			this.restRepo = restRepo;
-			
+
 			// list est la liste des objets retournée par query()
 			this.list = [];
-			
+
 			// l'url de l'api rest
 			this.apiurl = '/brest2016/rest/';
 			// this.apiurl est utilisable tel quel
 			// mais c'est plus pratique pour les
-			// logs d'avoir une url complete style http://localhost:8080/brest2016/rest/
+			// logs d'avoir une url complete style
+			// http://localhost:8080/brest2016/rest/
 			var self = this;
 			$resource(this.apiurl + "profile", {}).get(function(response) {
-				self.apiurl=response._links.self.href.replace('profile','');
+				self.apiurl = response._links.self.href.replace('profile', '');
 			});
-			
-			
-			
-			
+
 		}
 
 		/**
@@ -111,33 +109,37 @@
 		 * repository
 		 */
 		function create(element, callbackok, callbacknok) {
-			var restObject = new RestObject({}, this);
 			var self = this;
-			console.log('create ' + JSON.stringify(element) + ' dans ' + self.restRepo);
-			var url = this.apiurl + self.restRepo;
-			console.log("curl -i -X POST -H 'Content-Type:application/json' -d '" + JSON.stringify(element) + "'  " + url);
+			if (element != undefined) {
+				var restObject = new RestObject({}, this);
+				console.log('create ' + JSON.stringify(element) + ' dans ' + self.restRepo);
+				var url = this.apiurl + self.restRepo;
+				console.log("curl -i -X POST -H 'Content-Type:application/json' -d '" + JSON.stringify(element) + "'  " + url);
 
-			// var copy_element = angular.copy(element);
-			$resource(url).save(element, function(created) {
-				// var restObject=new RestObject(created,this);
-				$.extend(true, restObject.json, created);
-				restObject.id = restObject.getId();
-				console.log('callback create ok. id :' + restObject.getId() + " json : " + JSON.stringify(created));
-				self.list.push(restObject);
-				// on vide les champs de l'élément reourné.
-				// for ( var field in copy_element) {
-				// if (copy_element.hasOwnProperty(field)) {
-				// copy_element[field] = "";
-				// }
-				Utils.showMessage(self.restRepo + ' créé!');
-				typeof callbackok === 'function' && callbackok(restObject);
-			}, function(error) {
-				console.log('type ' + typeof callbacknok);
-				typeof callbacknok === 'function' && callbacknok(error);
+				// var copy_element = angular.copy(element);
+				$resource(url).save(element, function(created) {
+					// var restObject=new RestObject(created,this);
+					$.extend(true, restObject.json, created);
+					restObject.id = restObject.getId();
+					console.log('callback create ok. id :' + restObject.getId() + " json : " + JSON.stringify(created));
+					self.list.push(restObject);
+					// on vide les champs de l'élément reourné.
+					// for ( var field in copy_element) {
+					// if (copy_element.hasOwnProperty(field)) {
+					// copy_element[field] = "";
+					// }
+					Utils.showMessage(self.restRepo + ' créé!');
+					typeof callbackok === 'function' && callbackok(restObject);
+				}, function(error) {
+					console.log('type ' + typeof callbacknok);
+					typeof callbacknok === 'function' && callbacknok(error);
 
-			});
-			return restObject;
-			// return copy_element;
+				});
+				return restObject;
+				// return copy_element;
+			} else {
+				Utils.showMessage("impossible de creer " + self.restRepo + " indefini", "error");
+			}
 
 		}
 
@@ -152,9 +154,9 @@
 		function search(searchFunction, param, callbackok, callbacknok) {
 			var restObject = new RestObject({}, this);
 			var self = this;
-			console.log('search ' +  searchFunction + " " + JSON.stringify(param) + ' dans ' + self.restRepo);
+			console.log('search ' + searchFunction + " " + JSON.stringify(param) + ' dans ' + self.restRepo);
 			var url = this.apiurl + self.restRepo + "/search/" + searchFunction;
-			for (var key in param) {
+			for ( var key in param) {
 				url = url + "?" + key + "=" + param[key];
 			}
 			console.log("curl -i " + url);

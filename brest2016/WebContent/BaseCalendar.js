@@ -64,11 +64,6 @@
 				callback(self.events);
 			}
 			
-
-			
-			
-			
-			
 		}
 
 		/**
@@ -94,12 +89,8 @@
 				//console.log('ajouté');
 				this.events.push(event);
 			}
-			// this.fullCalendar( 'updateEvent', event );
 			this.ObjCalendar.fullCalendar('refetchEvents');
-		}
-
-		function addEvent1(event) {
-			this.events.push(event);
+			this.ObjCalendar.fullCalendar( 'rerenderEvents');
 		}
 
 		function removeEvent(event) {
@@ -108,6 +99,8 @@
 			//console.log('remove index ' + index);
 			//console.log('remove json ' + JSON.stringify(this.events[index].original.json));
 			this.events.splice(index, 1);
+			this.ObjCalendar.fullCalendar('refetchEvents');
+			this.ObjCalendar.fullCalendar( 'rerenderEvents');
 		}
 
 		/**

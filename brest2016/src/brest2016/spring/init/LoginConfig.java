@@ -29,23 +29,11 @@ import brest2016.spring.controller.Unauthorized401;
  *
  */
 @Configuration
-// @ComponentScan("brest2016.spring.data")
-// @ComponentScan
-//@ComponentScan("brest2016.spring.controller") //.FakeUserDetailsService")
-// @EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableWebSecurity
-// @EnableGlobalAuthentication
 public class LoginConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private LoginUserDetailsService userDetailsService;
-
-	// @Bean
-	// @Override
-	// public AuthenticationManager authenticationManagerBean() throws Exception
-	// {
-	// return super.authenticationManagerBean();
-	// }
 
 	// contrairement a l'exemple, il faut ce bean ...
 	@Bean(name = "LoginUserDetailsService")
@@ -55,27 +43,15 @@ public class LoginConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	@Override
-	// @Autowired
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		System.out.println("AuthenticationManagerBuilder");
 		auth.userDetailsService(userDetailsService);
 	}
 
 	@Override
-	// @Autowired
 	protected void configure(HttpSecurity http) throws Exception {
 		System.out.println("configure spring security");
-		// seul admin peut editer des moyens
-//		http.formLogin().and().authorizeRequests().antMatchers(HttpMethod.POST, "/rest/moyens").hasRole("ADMIN");
-//		http.formLogin().and().authorizeRequests().antMatchers(HttpMethod.PUT, "/rest/moyens/**").hasRole("ADMIN");
-//		http.formLogin().and().authorizeRequests().antMatchers(HttpMethod.PATCH, "/rest/moyens/**").hasRole("ADMIN");
-//		http.formLogin().and().authorizeRequests().antMatchers(HttpMethod.DELETE, "/rest/moyens/**").hasRole("ADMIN");
-//		
-//		// seul admin peut recuperer les visiteurs d'un activivite
-//		http.formLogin().and().authorizeRequests().antMatchers(HttpMethod.GET,"/activites/visiteurs").hasRole("ADMIN");
-//		http.formLogin();
-//		http.csrf().disable();
-		//http.exceptionHandling().authenticationEntryPoint(new Unauthorized401());
+		// seul ADMIN peut modifier les moyens et les activitées
 		http.authorizeRequests()
 			.antMatchers(HttpMethod.POST, "/rest/moyens").hasRole("ADMIN")
 			.antMatchers(HttpMethod.PUT, "/rest/moyens/**").hasRole("ADMIN")
@@ -89,16 +65,5 @@ public class LoginConfig extends WebSecurityConfigurerAdapter {
 		http.csrf().disable();
 	}
 	
-//	@Override
-//    public void configure(WebSecurity webSecurity) throws Exception
-//    {
-//		// seul admin peut creer des moyens
-//		webSecurity.  httpBasic().and().authorizeRequests().antMatchers(HttpMethod.POST, "/rest/moyens").hasRole("ADMIN");
-//		webSecurity.httpBasic().and().authorizeRequests().antMatchers(HttpMethod.PUT, "/rest/moyens/**").hasRole("ADMIN");
-//		webSecurity.httpBasic().and().authorizeRequests().antMatchers(HttpMethod.PATCH, "/rest/moyens/**").hasRole("ADMIN");
-//		webSecurity.httpBasic().and().authorizeRequests().antMatchers(HttpMethod.DELETE, "/rest/moyens/**").hasRole("ADMIN");
-//				
-//        
-//    }
 
 }

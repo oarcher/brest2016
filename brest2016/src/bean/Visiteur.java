@@ -7,6 +7,7 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,15 +54,10 @@ public class Visiteur implements Serializable {
 	// le password n'est pas visible par JSON
 	private @JsonIgnore String password = "";
 
-	// un visiteur peut etre inscrit a plusieurs activité
+	// un visiteur peut etre inscrit a plusieurs activités
 	// et une activite a plusieurs visiteurs
 	@ManyToMany
-	// parametre de JoinTable inutiles si les tables et colonnes respectent le
-	// nommage par defaut
-	// @JoinTable(name = "oarcher_visiteur_oarcher_activite", joinColumns =
-	// @JoinColumn(name = "visiteur_id") , inverseJoinColumns = @JoinColumn(name
-	// = "activite_id") )
-	@JoinTable(inverseJoinColumns = @JoinColumn(name = "activite_id" ))
+	@JoinTable(joinColumns = @JoinColumn(name = "visiteur_id") ,inverseJoinColumns = @JoinColumn(name = "activite_id" ))
 	private Set<Activite> activites = new HashSet<Activite>();
 
 	public Long getId() {

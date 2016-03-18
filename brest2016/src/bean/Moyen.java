@@ -26,6 +26,10 @@ import javax.persistence.PostUpdate;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotEmpty;
 
 import validator.NonOverlapActivitesMoyen;
 
@@ -45,16 +49,14 @@ public class Moyen implements Serializable {
 	@Column
 	private Long id;
 	
+	@NotEmpty(message="Le nom ne peut pas être vide")
 	private String nom;
+	@NotEmpty(message="Le lieu ne peut pas être vide")
+	private String lieu;
+	@DecimalMin(message="Il faut déclarer plus de places libres", value = "1")
+	private int nbPlaces;
 	
-	// http://stackoverflow.com/questions/30464782/how-to-maintain-bi-directional-relationships-with-spring-data-rest-and-jpa
-	// CascadeType.REMOVE pour supprimer les activites associées en cas de suppression d'un moyen
-	//@OneToMany( cascade = CascadeType.REMOVE ,mappedBy="moyen")
 	@OneToMany(mappedBy="moyen")
-	//@JoinTable(name="oarcher_activite_oarcher_moyen", joinColumns = @JoinColumn(name = "moyen_id") , inverseJoinColumns = @JoinColumn(name = "activite_id"))
-	//@OneToMany( cascade = CascadeType.ALL)
-	//@JoinTable(name="oarcher_activite_oarcher_moyen", joinColumns = @JoinColumn(name = "moyen_id") , inverseJoinColumns = @JoinColumn(name = "activite_id"))
-	// voir @Getter @Setter http://stackoverflow.com/questions/34754992/how-to-update-a-manytoone-relationship-with-spring-data-rest
 	private Set<Activite> activites = new HashSet<Activite>();
 
 	public Long getId() {
@@ -70,7 +72,6 @@ public class Moyen implements Serializable {
 		return nom;
 	}
 
-	//@OneToMany( fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="moyen")
 	public Set<Activite> getActivites() {
 		return activites;
 	}
@@ -82,19 +83,30 @@ public class Moyen implements Serializable {
 	public void setNom(String nom) {
 		this.nom = nom;
 	}
+
 	
+	
+	public String getLieu() {
+		return lieu;
+	}
+
+	public void setLieu(String lieu) {
+		this.lieu = lieu;
+	}
+
+	public int getNbPlaces() {
+		return nbPlaces;
+	}
+
+	public void setNbPlaces(int nbPlaces) {
+		this.nbPlaces = nbPlaces;
+	}
+
 	@Override
 	public String toString(){
 		return nom;
 		
 	}
-	
-	@PreUpdate
-	private void preUpdate() {
-		for (Activite act : activites) {
-			System.out.println("************ Moyen activite : " + act);
-		}
-		
-	}
+
 
 }

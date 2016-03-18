@@ -13,3 +13,11 @@
     animation: bounceIn 0.1s;
 }
 
+.modal-backdrop {
+   opacity: 0.1 !important;
+}
+
+.modal {
+   top: 25% !important;
+}
+

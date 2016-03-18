@@ -69,7 +69,6 @@
 				self.parent.update(self);
 				typeof callbackok === 'function' && callbackok(self);
 			}, function(error) {
-				alert(error);
 				typeof callbacknok === 'function' && callbacknok(error);
 			});
 		}
@@ -139,6 +138,7 @@
 						// console.log('getRelations : ' +
 						// JSON.stringify(processedResponse));
 						if (processedResponse._embeddedItems) {
+							// la reponse est un tableau
 							angular.forEach(processedResponse._embeddedItems, function(element, key) {
 								// console.log('query : ' +
 								// JSON.stringify(element));

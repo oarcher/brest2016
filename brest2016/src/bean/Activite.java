@@ -56,11 +56,10 @@ public class Activite implements Serializable {
 	@Column
 	private Long id = null;
 
-	private String lieu;
-
-	// TODO date valide
 	@NotNull
 	@DateTimeFormat
+	// validateur personnalisé pour respecter les dates de brest 2016
+	// TODO :  passer les dates en parametre value=
 	@DateActiviteValide
 	private Date datedebut;
 
@@ -72,39 +71,20 @@ public class Activite implements Serializable {
 	// pour le optional=false
 	// pour creer une activite liée a un moyen en un coup : curl-i -X POST -H 'Content-Type:application/json' -d '{"lieu":"lieu par defaut", "moyen" : "http://localhost:8080/brest2016/rest/moyens/7" , "datedebut":"2016-07-14T09:00:00","datefin":"2016-07-14T11:00:00"}'  http://localhost:8080/brest2016/rest/activites
 
-	//@ManyToOne
-	@ManyToOne(optional=false)  // ALL a l'air d'effacer moyen quand toutes les activites sont supprimées ( cascade=CascadeType.ALL ) //, fetch = FetchType.EAGER)
+	@ManyToOne(optional=false)  
 	@JoinColumn(name = "moyen_id")
 	@NotNull
-	// @JoinTable(name="oarcher_activite_oarcher_moyen", joinColumns =
-	// @JoinColumn(name = "activite_id") , inverseJoinColumns = @JoinColumn(name
-	// = "moyen_id"))
-	// // voir @HandleBeforeSave/@HandleBeforeLinkSave @Getter @Setter http://stackoverflow.com/questions/34754992/how-to-update-a-manytoone-relationship-with-spring-data-rest
 	private Moyen moyen = null;
 	
 	@ManyToMany(mappedBy = "activites") // champ activites de bean.Visiteur
-	// @JoinTable(name = "oarcher_visiteur_activite", joinColumns =
-	// @JoinColumn(name = "idActivite") , inverseJoinColumns = @JoinColumn(name
-	// = "idVisiteur") )
-	private Set<Visiteur> visiteur = new HashSet<Visiteur>();
+	private Set<Visiteur> visiteurs = new HashSet<Visiteur>();
 
-	@Transient
-	Set<ConstraintViolation<?>> constraintViolations = new HashSet<ConstraintViolation<?>>();
-	
 	public Long getId() {
 		return id;
 	}
 
 	public void setId(Long id) {
 		this.id = id;
-	}
-
-	public String getLieu() {
-		return lieu;
-	}
-
-	public void setLieu(String lieu) {
-		this.lieu = lieu;
 	}
 
 	public Date getDatedebut() {
@@ -123,8 +103,6 @@ public class Activite implements Serializable {
 		this.datefin = datefin;
 	}
 
-	// @ManyToOne
-	// @JoinColumn(name="moyen_id")
 	public Moyen getMoyen() {
 		return moyen;
 	}
@@ -134,21 +112,16 @@ public class Activite implements Serializable {
 		this.moyen = moyen;
 	}
 
-	public Set<Visiteur> getVisiteur() {
-		return visiteur;
+	public Set<Visiteur> getVisiteurs() {
+		return visiteurs;
 	}
 
-	public void setVisiteur(Set<Visiteur> visiteur) {
-		this.visiteur = visiteur;
+	public void setVisiteurs(Set<Visiteur> visiteurs) {
+		this.visiteurs = visiteurs;
 	}
 
 	@Override
 	public String toString() {
-//		String string = "activite : ";
-//		string += " id : " + id;
-//		string += " datedebut : " + datedebut;
-//		string += " datefin : " + datefin;
-//		string += " moyen : " + moyen ;
 		DateFormat formatter = new SimpleDateFormat("hh:mm");
 		
 		String string = "" + moyen + " de " + formatter.format(datedebut) + " a " + formatter.format(datefin);
@@ -156,48 +129,4 @@ public class Activite implements Serializable {
 
 	}
 	
-	@PrePersist
-	private void prePersist() throws ConstraintViolationException{
-		// ici, on peut raiser un execption de type constraintViolations,
-		// mais on n'a pas acces aux attributs.
-		
-		//Set<Activite> moyen_activites = moyen.getActivite();
-		System.out.println("PrePersist !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! activite : "  + this.toString() );
-//		if(!constraintViolations.isEmpty()){
-//			throw new ConstraintViolationException("test", constraintViolations );
-//		}
-
-	
-	}
-	
-	@PostPersist
-	private void postPersist(){
-		System.out.println("PostPersist !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! activite : " + this.toString() );
-	}
-	
-	@PostLoad
-	private void postLoad(){
-		System.out.println("PostLoad !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! activite  : " + this.toString() );
-	}
-	
-	@PreUpdate
-	private void preUpdate() throws ConstraintViolationException {
-		// voir https://docs.jboss.org/hibernate/validator/4.1/reference/en-US/html/validator-customconstraints.html
-		// ici on a acces aux attributs, mais on ne peux pas lancer d'exeption ConstraintViolationException
-		System.out.println("PreUpdate !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! activite : "  + this.toString() );
-		Set<Activite> moyen_activites = moyen.getActivites();
-		for (Activite moyen_activite : moyen_activites) {
-			System.out.println("Soeurs : " + moyen_activite);
-			constraintViolations.add(null);
-		}
-//		Set<ConstraintViolation<?>> constraintViolations = new HashSet<ConstraintViolation<?>>();
-//		throw new ConstraintViolationException("test", constraintViolations );
-
-	}
-	
-	@PostUpdate
-	private void postUpdate(){
-		System.out.println("PostUpdate !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! activite  : "  + this.toString() );
-	}
-
 }
